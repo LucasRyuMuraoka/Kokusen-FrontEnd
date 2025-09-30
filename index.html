@@ -3,589 +3,623 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Kokusen — Front Jujutsu (CRUD)</title>
-<link rel="icon" href="data:,">
+<title>Kokusen Explorer — Frontend</title>
 <style>
-  /* ========= THEME ========= */
   :root{
-    --bg:#081226;
-    --panel:#071726;
-    --muted:#9fb0c8;
-    --accent:#ff616d;
-    --accent-2:#7c5cff;
+    --bg:#0f1724; --card:#0b1220; --muted:#9aa4b2; --accent:#86efac; --accent-2:#60a5fa;
     --glass: rgba(255,255,255,0.03);
-    --card:#071226;
-    --success:#4ade80;
-    --danger:#ff7b7b;
+    color-scheme: dark;
   }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;color:#e6f2ff;background:
-    radial-gradient(1200px 600px at 10% 10%, rgba(124,92,255,0.06), transparent 10%),
-    radial-gradient(900px 500px at 90% 80%, rgba(255,97,109,0.04), transparent 10%),
-    var(--bg);
-    -webkit-font-smoothing:antialiased;
-  }
-  a{color:inherit}
-  /* ========== LAYOUT ========== */
-  .app{max-width:1200px;margin:28px auto;padding:18px;display:grid;grid-template-columns:260px 1fr;gap:18px}
-  header.site{grid-column:1/3;display:flex;align-items:center;gap:12px}
-  header h1{margin:0;font-size:20px;letter-spacing:0.2px}
-  header small{display:block;color:var(--muted);font-size:12px}
-  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:12px;padding:12px;border:1px solid var(--glass);box-shadow:0 8px 30px rgba(2,6,23,0.6)}
-  nav.sidebar{height:75vh;padding:12px;overflow:auto}
-  nav .logo{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-  .logo .badge{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
-  .nav-group{margin-top:10px}
-  .nav-item{padding:10px;border-radius:8px;cursor:pointer;color:#dff3ff;margin-bottom:6px}
-  .nav-item:hover{background:rgba(255,255,255,0.02)}
-  .nav-item.active{background:linear-gradient(90deg, rgba(124,92,255,0.12), rgba(255,97,109,0.06));box-shadow:inset 0 0 0 1px rgba(255,255,255,0.02)}
-  .meta{font-size:12px;color:var(--muted);margin-top:6px}
-  .main{height:75vh;padding:12px;overflow:auto}
-  .topbar{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-  .search{flex:1;display:flex;gap:8px}
-  input[type=text], select, textarea{background:transparent;border:1px solid var(--glass);padding:8px;border-radius:8px;color:#eaf6ff}
-  button.btn{background:linear-gradient(90deg,var(--accent),var(--accent-2));border:0;padding:8px 12px;color:white;border-radius:8px;cursor:pointer}
-  button.ghost{background:transparent;border:1px solid var(--glass);color:var(--muted)}
-  .grid-2{display:grid;grid-template-columns:1fr 360px;gap:12px}
-  .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
-  .card-item{background:linear-gradient(180deg, rgba(255,255,255,0.015), transparent);border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,0.02)}
-  .card-item h3{margin:0 0 6px 0;font-size:16px}
+  *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#071022 0%, #081226 60%); color:#e6eef6;}
+  header{display:flex;align-items:center;gap:16px;padding:18px 24px;border-bottom:1px solid rgba(255,255,255,0.03)}
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#04293b}
+  h1{font-size:18px;margin:0}
+  .subtitle{font-size:12px;color:var(--muted)}
+  .controls{margin-left:auto;display:flex;gap:8px;align-items:center}
+  input,select,button,textarea{background:var(--card);border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:8px;color:inherit}
+  input[type=text]{min-width:300px}
+  main{display:flex;gap:20px;padding:20px}
+  nav{width:220px;background:rgba(255,255,255,0.02);padding:16px;border-radius:12px;min-height:60vh}
+  nav h3{margin:6px 0 12px 0;color:var(--muted);font-size:13px}
+  .nav-btn{display:block;padding:10px;border-radius:8px;margin-bottom:8px;text-decoration:none;color:inherit}
+  .nav-btn.active{background:linear-gradient(90deg, rgba(134,239,172,0.08), rgba(96,165,250,0.06));box-shadow:0 4px 18px rgba(6,8,15,0.6)}
+  section.viewer{flex:1;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:18px;border-radius:12px;min-height:60vh;overflow:auto}
+  .toolbar{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+  .card{background:var(--glass);border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,0.03)}
   .muted{color:var(--muted);font-size:13px}
-  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-  .tag{padding:4px 8px;border-radius:999px;font-size:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.02)}
-  .actions{display:flex;gap:6px;margin-top:8px}
-  .btn-sm{padding:6px 8px;border-radius:8px;font-size:13px;cursor:pointer;border:0}
-  .edit{background:#ffeecd;color:#1b1b1b}
-  .del{background:rgba(255,97,109,0.12);color:var(--accent);border:1px solid rgba(255,97,109,0.12)}
-  .create-btn{display:block;width:100%;text-align:center;padding:10px;border-radius:8px;background:linear-gradient(90deg,var(--accent-2),var(--accent));color:#fff;border:0;margin-top:10px}
-  /* form */
-  .form-row{display:flex;gap:8px;margin-top:8px}
-  .form-col{flex:1}
-  label.field{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-  form.modal{display:flex;flex-direction:column;gap:8px}
-  .modal-wrap{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:60;padding:18px}
-  .modal{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:12px;border-radius:12px;border:1px solid var(--glass);width:100%;max-width:760px}
-  .modal h2{margin:0}
-  .close-x{position:absolute;right:18px;top:18px;cursor:pointer;color:var(--muted)}
-  .footer-row{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
-  /* small helpers */
-  .badge-small{padding:4px 8px;border-radius:999px;background:rgba(255,255,255,0.02);font-size:12px}
-  pre.resp{background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;color:#dff3ff;overflow:auto}
-  .notice{padding:8px;border-radius:8px;background:linear-gradient(90deg, rgba(124,92,255,0.06), rgba(255,97,109,0.03));color:var(--muted)}
-  @media (max-width:980px){.app{grid-template-columns:1fr;padding:12px}.grid-2{grid-template-columns:1fr}.main{height:auto}.sidebar{height:auto}}
+  .small{font-size:13px}
+  .btn{padding:8px 10px;border-radius:8px;border:none;background:var(--accent-2);color:#06203a;cursor:pointer}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+  .form-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  textarea{min-height:80px}
+  .detail{display:flex;gap:12px;align-items:flex-start}
+  .detail .meta{flex:1}
+  footer{padding:18px 24px;color:var(--muted);font-size:13px;border-top:1px solid rgba(255,255,255,0.02);text-align:center}
+  .search{display:flex;gap:8px;align-items:center}
+  .chip{display:inline-block;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.02);font-size:13px;color:var(--muted)}
+  .link{color:var(--accent-2);cursor:pointer;text-decoration:underline}
+  .flex{display:flex;align-items:center;gap:8px}
+  pre{white-space:pre-wrap;background:#041226;padding:10px;border-radius:8px;color:var(--muted);font-size:13px}
+  @media(max-width:900px){nav{display:none} main{padding:12px}}
 </style>
 </head>
 <body>
-  <div class="app">
-    <header class="site card">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div class="logo">
-          <div class="badge">Kj</div>
-        </div>
-        <div>
-          <h1>Kokusen — Jujutsu Front</h1>
-          <small>Front-end CRUD completo consumindo sua API</small>
-        </div>
-      </div>
-      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-        <div class="meta">Base URL</div>
-        <input id="baseUrl" type="text" value="https://kokusen-lucasryu.onrender.com" style="width:360px" />
-        <button id="testBase" class="btn ghost">Testar</button>
-      </div>
-    </header>
-
-    <!-- SIDEBAR -->
-    <nav class="sidebar card">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div style="font-weight:700">Navegação</div>
-        <div class="meta" id="serverStatus">—</div>
-      </div>
-
-      <div class="nav-group" id="nav">
-        <div class="nav-item active" data-view="characters">Personagens</div>
-        <div class="nav-item" data-view="clans">Clãs</div>
-        <div class="nav-item" data-view="domain-expansions">Domain Expansions</div>
-        <div class="nav-item" data-view="techniques">Técnicas</div>
-      </div>
-
-      <div style="margin-top:12px">
-        <div class="muted">Atalhos</div>
-        <button id="btnRefresh" class="create-btn">Atualizar listagens</button>
-      </div>
-
-      <div style="margin-top:12px" class="meta">
-        Observações:
-        <ul style="padding-left:16px;margin:8px 0 0 0">
-          <li>Se aparecer erro de CORS, habilite CORS no servidor.</li>
-          <li>Campos de listas usam separador <code>,</code> (vírgula) ao criar/editar.</li>
-        </ul>
-      </div>
-    </nav>
-
-    <!-- MAIN -->
-    <main class="main card">
-      <div class="topbar">
-        <div style="font-weight:700" id="viewTitle">Personagens</div>
-        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-          <input id="searchInput" type="text" placeholder="Pesquisar por nome..." />
-          <button id="searchBtn" class="btn ghost">Buscar</button>
-          <button id="openCreate" class="btn">+ Criar</button>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div>
-          <div id="listArea" class="list"></div>
-          <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
-            <button id="prevPage" class="btn ghost">Anterior</button>
-            <div class="muted" id="pageInfo">Página 1</div>
-            <button id="nextPage" class="btn ghost">Próxima</button>
-          </div>
-        </div>
-
-        <aside>
-          <div style="font-weight:700">Detalhes / Resposta</div>
-          <div style="margin-top:8px" id="detailArea" class="card-item muted">Selecione um item para ver detalhes</div>
-
-          <div style="margin-top:12px">
-            <div style="font-weight:700">Console</div>
-            <pre id="log" class="resp" style="height:180px">Pronto.</pre>
-          </div>
-        </aside>
-      </div>
-    </main>
-  </div>
-
-  <!-- MODAL -->
-  <div id="modalWrap" class="modal-wrap">
-    <div class="modal">
-      <div style="position:relative">
-        <h2 id="modalTitle">Criar</h2>
-        <div class="close-x" id="modalClose">✕</div>
-      </div>
-
-      <form id="entityForm" class="modal">
-        <!-- dynamic fields inserted here -->
-        <div id="formFields"></div>
-
-        <div class="footer-row">
-          <button type="button" class="btn ghost" id="cancelBtn">Cancelar</button>
-          <button type="submit" class="btn" id="saveBtn">Salvar</button>
-        </div>
-      </form>
+<header>
+  <div class="brand">
+    <div class="logo">K</div>
+    <div>
+      <h1>Kokusen Explorer</h1>
+      <div class="subtitle">Frontend bonito para consumir sua API — Quarkus (single file)</div>
     </div>
   </div>
+  <div class="controls">
+    <label class="muted" for="baseUrl">API Base URL</label>
+    <input id="baseUrl" type="text" value="https://kokusen-lucasryu.onrender.com" />
+  </div>
+</header>
+
+<main>
+  <nav>
+    <h3>Recursos</h3>
+    <a class="nav-btn active" data-tab="characters">Characters</a>
+    <a class="nav-btn" data-tab="clans">Clans</a>
+    <a class="nav-btn" data-tab="techniques">Techniques</a>
+    <a class="nav-btn" data-tab="domain-expansions">Domain Expansions</a>
+    <hr style="border:none;height:1px;background:rgba(255,255,255,0.02);margin:12px 0" />
+    <div class="muted">Dicas</div>
+    <div style="margin-top:8px" class="small">Coloque a URL base (ex: <span class="chip">https://kokusen-lucasryu.onrender.com</span>). Use o painel para criar, editar, buscar e deletar recursos.</div>
+  </nav>
+
+  <section class="viewer">
+    <div id="app">
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search">
+          <input id="q" type="text" placeholder="Pesquisar por nome..." />
+          <button id="btnSearch" class="btn">Pesquisar</button>
+        </div>
+        <div style="margin-left:auto" class="flex">
+          <select id="pageSize">
+            <option value="5">5 por página</option>
+            <option value="10" selected>10 por página</option>
+            <option value="20">20 por página</option>
+          </select>
+          <button id="btnCreate" class="btn">Criar novo</button>
+          <button id="btnRefresh" class="btn ghost">Atualizar</button>
+        </div>
+      </div>
+
+      <!-- Main content placeholder -->
+      <div id="content">
+        <!-- dynamic -->
+      </div>
+
+      <!-- raw response -->
+      <div style="margin-top:14px">
+        <div class="muted">Última resposta (raw):</div>
+        <pre id="raw">Nenhuma requisição ainda.</pre>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>Feito para a API <strong>Kokusen</strong>. Arquivo único: HTML + CSS + JS.</footer>
 
 <script>
 /*
-  Single-file front-end CRUD for the provided OpenAPI.
-  Resources: characters, clans, domain-expansions, techniques
-  Author: generated for Lucas
+  Kokusen Explorer — a single-file frontend.
+  It supports: characters, clans, techniques, domain-expansions.
+  Uses the API paths described in the OpenAPI you provided.
+  NOTE: ping/health functionality removed per request (não foi incluído nada fora da doc).
 */
 
-const selectors = {
-  navItems: document.querySelectorAll('.nav-item'),
-  viewTitle: document.getElementById('viewTitle'),
-  listArea: document.getElementById('listArea'),
-  detailArea: document.getElementById('detailArea'),
-  log: document.getElementById('log'),
-  modalWrap: document.getElementById('modalWrap'),
-  modalTitle: document.getElementById('modalTitle'),
-  formFields: document.getElementById('formFields'),
-  entityForm: document.getElementById('entityForm'),
-  openCreate: document.getElementById('openCreate'),
-  baseUrlInput: document.getElementById('baseUrl'),
-  serverStatus: document.getElementById('serverStatus'),
-  testBase: document.getElementById('testBase'),
-  btnRefresh: document.getElementById('btnRefresh'),
-  searchInput: document.getElementById('searchInput'),
-  searchBtn: document.getElementById('searchBtn'),
-  pageInfo: document.getElementById('pageInfo'),
-  prevPage: document.getElementById('prevPage'),
-  nextPage: document.getElementById('nextPage'),
-};
-
-let state = {
-  view: 'characters',
+const state = {
+  base: document.getElementById('baseUrl').value.replace(/\/+$/, ''),
+  tab: 'characters',
   page: 1,
   size: 10,
-  lastResponse: null,
-  editing: null, // {resource, id}
-  searchQ: ''
+  q: '',
+  lastResponse: null
 };
 
-const RESOURCE_CONFIG = {
-  'characters': {
-    title: 'Personagens',
-    listPath: '/characters',
-    idPath: '/characters/{id}',
-    searchPath: '/characters/search',
-    listKey: 'characters',
-    createSchema: {
-      name: 'string',
-      rank: 'string',
-      clanName: 'string',
-      techniqueNames: 'array', // comma separated
-      domainExpansionName: 'string',
-      domainExpansionEffect: 'string'
-    },
-    display: (c) => ({
-      title: c.name || '(sem nome)',
-      subtitle: c.rank || '',
-      lines: [
-        ['Clã', c.clanName || '—'],
-        ['Técnicas', (c.techniques || []).join(', ') || '—'],
-        ['Domain', c.domainExpansionName || '—']
-      ]
-    })
-  },
-  'clans': {
-    title: 'Clãs',
-    listPath: '/clans',
-    idPath: '/clans/{id}',
-    searchPath: '/clans/search',
-    listKey: 'clans',
-    createSchema: {
-      name: 'string',
-      description: 'string'
-    },
-    display: (c) => ({
-      title: c.name || '(sem nome)',
-      subtitle: `Members: ${((c.memberIds||[]).length)}`,
-      lines: [
-        ['Descrição', c.description || '—']
-      ]
-    })
-  },
-  'domain-expansions': {
-    title: 'Domain Expansions',
-    listPath: '/domain-expansions',
-    idPath: '/domain-expansions/{id}',
-    searchPath: '/domain-expansions/search',
-    listKey: 'domainExpansions',
-    createSchema: {
-      name: 'string',
-      effect: 'string'
-    },
-    display: (d) => ({
-      title: d.name || '(sem nome)',
-      subtitle: `Owner ID: ${d.ownerId ?? '—'}`,
-      lines: [
-        ['Efeito', d.effect || '—']
-      ]
-    })
-  },
-  'techniques': {
-    title: 'Técnicas',
-    listPath: '/techniques',
-    idPath: '/techniques/{id}',
-    searchPath: '/techniques/search',
-    listKey: 'techniques',
-    createSchema: {
-      name: 'string',
-      description: 'string'
-    },
-    display: (t) => ({
-      title: t.name || '(sem nome)',
-      subtitle: `Users: ${((t.userIds||[]).length)}`,
-      lines: [
-        ['Descrição', t.description || '—']
-      ]
-    })
-  }
+const elements = {
+  content: document.getElementById('content'),
+  raw: document.getElementById('raw'),
+  baseUrl: document.getElementById('baseUrl'),
+  q: document.getElementById('q'),
+  btnSearch: document.getElementById('btnSearch'),
+  btnCreate: document.getElementById('btnCreate'),
+  btnRefresh: document.getElementById('btnRefresh'),
+  pageSize: document.getElementById('pageSize'),
+  navBtns: document.querySelectorAll('.nav-btn'),
 };
 
-// UTIL
-function log(msg){
-  const ts = new Date().toLocaleTimeString();
-  selectors.log.textContent = `${ts} — ${msg}\n` + selectors.log.textContent;
-}
-function base(){ return (selectors.baseUrlInput.value||'').replace(/\/+$/,''); }
-function apiURL(path){ return base() + path; }
-function showNotice(msg, important=false){
-  selectors.detailArea.innerHTML = `<div class="notice">${msg}</div>`;
-  if(important) log(msg);
-}
+function setRaw(r){ elements.raw.textContent = r ? (typeof r === 'string' ? r : JSON.stringify(r, null, 2)) : '---'; }
+function updateBase(){ state.base = elements.baseUrl.value.replace(/\/+$/, ''); }
 
-// fetch wrapper
-async function apiFetch(url, opts = {}){
-  log(`${opts.method || 'GET'} ${url}`);
-  try {
-    const res = await fetch(url, opts);
-    const text = await res.text();
-    const ct = res.headers.get('content-type') || '';
-    let body = text;
-    if(ct.includes('application/json') || (text && (text.trim().startsWith('{') || text.trim().startsWith('[')))){
-      try{ body = JSON.parse(text); }catch(e){ /* leave text */ }
-    }
-    return { ok: res.ok, status: res.status, body, headers: res.headers };
-  } catch (err){
-    // network / CORS errors
-    log('Network error: ' + err.message);
-    throw new Error('Network/CORS error: ' + err.message);
-  }
-}
+elements.baseUrl.addEventListener('change', updateBase);
 
-// RENDER LIST
-async function loadList(){
-  const conf = RESOURCE_CONFIG[state.view];
-  selectors.viewTitle.textContent = conf.title;
-  selectors.pageInfo.textContent = `Página ${state.page}`;
-  selectors.listArea.innerHTML = '<div class="muted">Carregando...</div>';
-  selectors.detailArea.textContent = 'Selecione um item para ver detalhes';
-
-  // build query
-  const params = new URLSearchParams();
-  params.set('page', state.page);
-  params.set('size', state.size);
-  if(state.searchQ) params.set('q', state.searchQ);
-
-  // prefer search endpoint if searching
-  let url = apiURL(conf.listPath) + '?' + params.toString();
-  if(state.searchQ && conf.searchPath){
-    url = apiURL(conf.searchPath) + '?' + params.toString();
-  }
-
-  try {
-    const res = await apiFetch(url, { method: 'GET' });
-    if(!res.ok){
-      if(typeof res.body === 'object') showNotice(`Erro ${res.status}: ${JSON.stringify(res.body)}`, true);
-      else showNotice(`Erro ${res.status}: ${res.body || 'Erro'}`, true);
-      selectors.listArea.innerHTML = '';
-      return;
-    }
-
-    // spec uses wrapper objects for lists for some resources
-    const key = conf.listKey;
-    let items = res.body;
-    if(key && typeof res.body === 'object' && res.body[key] !== undefined) items = res.body[key];
-    if(!Array.isArray(items)){
-      // sometimes search endpoints return arrays directly (per spec)
-      if(Array.isArray(res.body)) items = res.body;
-      else items = [];
-    }
-
-    state.lastResponse = res.body;
-    renderItems(items);
-  } catch (err){
-    selectors.listArea.innerHTML = `<div class="muted">Erro ao buscar: ${err.message}</div>`;
-    selectors.detailArea.textContent = '—';
-  }
-}
-
-function renderItems(items){
-  selectors.listArea.innerHTML = '';
-  if(!items || items.length === 0){
-    selectors.listArea.innerHTML = '<div class="muted">Nenhum item encontrado.</div>';
-    return;
-  }
-  for(const it of items){
-    const conf = RESOURCE_CONFIG[state.view];
-    const d = conf.display(it);
-    const el = document.createElement('div');
-    el.className = 'card-item';
-    el.innerHTML = `
-      <h3>${escapeHtml(d.title)}</h3>
-      <div class="muted">${escapeHtml(d.subtitle || '')}</div>
-      <div class="tags">${d.lines.map(l=>`<div class="tag"><strong>${escapeHtml(l[0])}:</strong> ${escapeHtml(l[1] || '')}</div>`).join('')}</div>
-      <div class="actions">
-        <button class="btn-sm edit" data-id="${it.id}">Editar</button>
-        <button class="btn-sm del" data-id="${it.id}">Excluir</button>
-        <button class="btn-sm ghost" data-id="${it.id}" data-info>Ver</button>
-      </div>
-    `;
-    // attach handlers
-    el.querySelector('.edit').addEventListener('click', ()=> openEdit(it));
-    el.querySelector('.del').addEventListener('click', ()=> doDelete(it));
-    el.querySelector('[data-info]').addEventListener('click', ()=> showDetail(it));
-    selectors.listArea.appendChild(el);
-  }
-}
-
-// ESCAPE HTML
-function escapeHtml(s){
-  if(s === null || s === undefined) return '';
-  return String(s)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#039;');
-}
-
-// SHOW DETAIL
-function showDetail(item){
-  const conf = RESOURCE_CONFIG[state.view];
-  const d = conf.display(item);
-  let html = `<h3>${escapeHtml(d.title)}</h3><div class="muted">${escapeHtml(d.subtitle || '')}</div><div style="margin-top:8px">`;
-  for(const l of d.lines){
-    html += `<div style="margin-bottom:6px"><strong>${escapeHtml(l[0])}:</strong><div style="font-family:monospace;margin-top:4px">${escapeHtml(l[1])}</div></div>`;
-  }
-  html += '</div>';
-  html += `<div style="margin-top:8px"><small class="muted">JSON completo:</small><pre class="resp">${escapeHtml(JSON.stringify(item, null, 2))}</pre></div>`;
-  selectors.detailArea.innerHTML = html;
-}
-
-// CREATE / EDIT MODAL
-function openCreate(){
-  state.editing = null;
-  openModal('Criar ' + RESOURCE_CONFIG[state.view].title, RESOURCE_CONFIG[state.view].createSchema, null);
-}
-function openEdit(item){
-  state.editing = { resource: state.view, id: item.id };
-  openModal('Editar ' + RESOURCE_CONFIG[state.view].title, RESOURCE_CONFIG[state.view].createSchema, item);
-}
-
-function openModal(title, schema, data){
-  selectors.modalTitle.textContent = title;
-  selectors.formFields.innerHTML = '';
-  // generate fields from schema
-  for(const [key, type] of Object.entries(schema)){
-    const val = data ? (data[key] !== undefined ? data[key] : '') : '';
-    const fieldId = 'fld_' + key;
-    const label = key.replace(/[A-Z]/g, m=>' '+m).replace(/_/g,' ');
-    if(type === 'array'){
-      selectors.formFields.insertAdjacentHTML('beforeend', `
-        <div>
-          <label class="field">${label}</label>
-          <input id="${fieldId}" type="text" placeholder="use vírgula para separar (ex: T1, T2)" value="${escapeHtml(Array.isArray(val) ? val.join(', ') : val)}" />
-        </div>
-      `);
-    } else {
-      selectors.formFields.insertAdjacentHTML('beforeend', `
-        <div>
-          <label class="field">${label}</label>
-          <input id="${fieldId}" type="text" value="${escapeHtml(val)}" />
-        </div>
-      `);
-    }
-  }
-  // show modal
-  selectors.modalWrap.style.display = 'flex';
-}
-
-// modal close
-document.getElementById('modalClose').addEventListener('click', ()=> { selectors.modalWrap.style.display='none'; });
-document.getElementById('cancelBtn').addEventListener('click', ()=> { selectors.modalWrap.style.display='none'; });
-
-// HANDLE FORM SUBMIT
-selectors.entityForm.addEventListener('submit', async (ev) => {
-  ev.preventDefault();
-  const conf = RESOURCE_CONFIG[state.view];
-  const schema = conf.createSchema;
-  const data = {};
-  for(const key of Object.keys(schema)){
-    const el = document.getElementById('fld_' + key);
-    if(!el) continue;
-    let v = el.value.trim();
-    if(schema[key] === 'array'){
-      v = v ? v.split(',').map(s=>s.trim()).filter(Boolean) : [];
-      // adjust field names that API expects slightly different names for characters
-      // CharacterRequest expects 'techniqueNames' (we used same key)
-    }
-    data[key] = v;
-  }
-
-  try {
-    if(state.editing && state.editing.id){
-      // PUT
-      const url = apiURL(conf.idPath.replace('{id}', state.editing.id));
-      // request body naming: API expects CharacterRequest etc. We pass data as-is.
-      const res = await apiFetch(url, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
-      if(res.ok){
-        selectors.modalWrap.style.display='none';
-        showNotice('Atualizado com sucesso', true);
-        await loadList();
-      } else {
-        showNotice(`Erro ${res.status}: ${JSON.stringify(res.body)}`, true);
-      }
-    } else {
-      // POST
-      const url = apiURL(conf.listPath);
-      const res = await apiFetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
-      if(res.ok || res.status === 201){
-        selectors.modalWrap.style.display='none';
-        showNotice('Criado com sucesso', true);
-        // reset to page 1 to show new item
-        state.page = 1;
-        await loadList();
-      } else {
-        showNotice(`Erro ${res.status}: ${JSON.stringify(res.body)}`, true);
-      }
-    }
-  } catch (err){
-    showNotice('Erro: ' + err.message, true);
-  }
-});
-
-// DELETE
-async function doDelete(item){
-  if(!confirm('Confirma exclusão deste item?')) return;
-  const conf = RESOURCE_CONFIG[state.view];
-  const url = apiURL(conf.idPath.replace('{id}', item.id));
-  try {
-    const res = await apiFetch(url, { method: 'DELETE' });
-    if(res.ok || res.status === 204){
-      showNotice('Removido com sucesso', true);
-      await loadList();
-    } else {
-      showNotice(`Erro ${res.status}: ${JSON.stringify(res.body)}`, true);
-    }
-  } catch (err){
-    showNotice('Erro: ' + err.message, true);
-  }
-}
-
-// NAVIGATION
-for(const ni of selectors.navItems){
-  ni.addEventListener('click', (ev) => {
-    selectors.navItems.forEach(n=>n.classList.remove('active'));
-    ni.classList.add('active');
-    state.view = ni.dataset.view;
+elements.navBtns.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    elements.navBtns.forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    state.tab = btn.dataset.tab;
     state.page = 1;
-    state.searchQ = '';
-    selectors.searchInput.value = '';
-    loadList();
+    render();
   });
+});
+
+elements.btnSearch.addEventListener('click', ()=>{ state.q = elements.q.value.trim(); state.page = 1; render(); });
+elements.btnRefresh.addEventListener('click', ()=> render());
+elements.pageSize.addEventListener('change', ()=> { state.size = +elements.pageSize.value; render(); });
+elements.btnCreate.addEventListener('click', ()=> openCreateForm());
+
+function showError(e){
+  let msg = 'Erro';
+  if(e instanceof Response){
+    e.text().then(t=> setRaw(t));
+    msg = 'Requisição falhou: ' + e.status;
+  } else {
+    msg = e.message || String(e);
+    setRaw(msg);
+  }
+  alert(msg);
 }
 
-selectors.openCreate.addEventListener('click', openCreate);
-selectors.btnRefresh.addEventListener('click', ()=> loadList());
-selectors.searchBtn.addEventListener('click', ()=> {
-  state.searchQ = selectors.searchInput.value.trim();
-  state.page = 1;
-  loadList();
-});
-selectors.searchInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') selectors.searchBtn.click(); });
-
-selectors.prevPage.addEventListener('click', ()=>{ if(state.page>1){ state.page--; loadList(); }});
-selectors.nextPage.addEventListener('click', ()=>{ state.page++; loadList(); });
-
-selectors.testBase.addEventListener('click', async ()=>{
-  const url = apiURL('/');
-  selectors.serverStatus.textContent = 'testando...';
-  try {
-    const res = await apiFetch(apiURL('/'), { method: 'GET' });
-    if(res.ok){
-      selectors.serverStatus.textContent = 'online';
-      log('Servidor acessível');
-    } else {
-      selectors.serverStatus.textContent = `resp ${res.status}`;
-    }
-  } catch (err){
-    selectors.serverStatus.textContent = 'erro';
-    log('Erro ao testar base: ' + err.message);
+async function apiFetch(path, opts={}){
+  updateBase();
+  const url = (path.startsWith('http') ? path : state.base + path);
+  const headers = opts.headers || {};
+  if(!(opts.body instanceof FormData)) headers['Content-Type'] = 'application/json';
+  const final = Object.assign({method:'GET', headers}, opts);
+  if(final.body && typeof final.body !== 'string' && !(final.body instanceof FormData)){
+    final.body = JSON.stringify(final.body);
   }
-});
+  const res = await fetch(url, final);
+  const text = await res.text();
+  let parsed = null;
+  try{ parsed = text ? JSON.parse(text) : null; } catch(e){}
+  state.lastResponse = {status: res.status, ok: res.ok, body: parsed ?? text};
+  setRaw(state.lastResponse);
+  if(!res.ok) {
+    const ex = res;
+    throw ex;
+  }
+  return parsed;
+}
 
-// initial load
-(function init(){
-  // try to load first view
-  loadList();
-  // show example detail placeholder
-  selectors.detailArea.innerHTML = '<div class="muted">Selecione um item para ver detalhes aqui.</div>';
-  log('Front iniciado. Base: ' + base());
-})();
+/* ---------- Renderers for each resource ---------- */
+
+async function render(){
+  elements.q.value = state.q;
+  if(state.tab === 'characters') await renderCharacters();
+  if(state.tab === 'clans') await renderClans();
+  if(state.tab === 'techniques') await renderTechniques();
+  if(state.tab === 'domain-expansions') await renderDomainExpansions();
+}
+
+function makeCard(htmlInner){ const d = document.createElement('div'); d.className='card'; d.innerHTML = htmlInner; return d; }
+
+/* --------- Characters --------- */
+async function renderCharacters(){
+  elements.content.innerHTML = '<h2>Characters</h2>';
+  const toolbar = document.createElement('div'); toolbar.className='toolbar';
+  elements.content.appendChild(toolbar);
+
+  try{
+    let path = '/characters';
+    const params = new URLSearchParams();
+    params.set('page', state.page);
+    params.set('size', state.size);
+    if(state.q) { path = '/characters/search'; params.set('q', state.q); }
+    const url = path + '?' + params.toString();
+    const data = await apiFetch(url);
+    const list = Array.isArray(data) ? data : (data.content || data.characters || data);
+    const grid = document.createElement('div'); grid.className='card-grid';
+    if(Array.isArray(list) && list.length){
+      list.forEach(ch => {
+        const html = `
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:700">${escapeHtml(ch.name||'—')}</div>
+              <div class="muted small">${escapeHtml(ch.rank||'—')} • ${escapeHtml(ch.clanName||'Sem clã')}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <button class="btn" onclick="viewCharacter(${ch.id})">Ver</button>
+              <button class="btn ghost" onclick="editCharacter(${ch.id})">Editar</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(makeCard(html));
+      });
+    } else {
+      grid.appendChild(makeCard('<div class="muted">Nenhum personagem encontrado.</div>'));
+    }
+    elements.content.appendChild(grid);
+
+  } catch(e){
+    showError(e);
+  }
+}
+
+/* Character helpers */
+window.viewCharacter = async function(id){
+  try{
+    const ch = await apiFetch('/characters/' + id);
+    const detail = document.createElement('div');
+    detail.innerHTML = `<h3>${escapeHtml(ch.name)}</h3><div class="muted">Rank: ${escapeHtml(ch.rank||'—')}</div><div class="muted">Clan: ${escapeHtml(ch.clanName||'—')}</div>
+      <div style="margin-top:8px"><strong>Técnicas:</strong></div>
+      <div style="margin-top:6px">${(ch.links && ch.links.length)? ch.links.map(l=> \`<div class="chip">${escapeHtml(l.rel)}: <span class="link" onclick="window.open('\${l.href}','_blank')">\${escapeHtml(l.href)}</span></div>\`).join(' ') : '<span class=\"muted\">Nenhuma</span>'}</div>
+      <div style="margin-top:12px">
+        <button class="btn" onclick="editCharacter(${ch.id})">Editar</button>
+        <button class="btn ghost" onclick="deleteCharacter(${ch.id})">Deletar</button>
+      </div>
+      <hr/>
+      <pre>${escapeHtml(JSON.stringify(ch, null, 2))}</pre>
+    `;
+    showModal('Character', detail.innerHTML);
+  }catch(e){ showError(e); }
+}
+
+window.editCharacter = async function(id){
+  try{
+    const ch = await apiFetch('/characters/' + id);
+    const form = document.createElement('div');
+    form.innerHTML = `
+      <div class="form-row"><label>Nome</label><input id="ch_name" value="${escapeAttr(ch.name||'')}" /></div>
+      <div class="form-row"><label>Rank</label><input id="ch_rank" value="${escapeAttr(ch.rank||'')}" /></div>
+      <div class="form-row"><label>Clan Name</label><input id="ch_clanName" value="${escapeAttr(ch.clanName||'')}" /></div>
+      <div class="form-row"><label>Technique Names (vírgula)</label><input id="ch_techs" value="${escapeAttr((ch.techniqueNames||[]).join(', '))}" /></div>
+      <div class="form-row"><label>Domain Expansion Name</label><input id="ch_domain" value="${escapeAttr(ch.domainExpansionName||'')}" /></div>
+      <div style="margin-top:8px"><button id="saveCh" class="btn">Salvar</button> <button id="cancelCh" class="btn ghost">Cancelar</button></div>
+    `;
+    showModal('Editar personagem', form.innerHTML);
+    document.getElementById('saveCh').addEventListener('click', async ()=>{
+      const body = {
+        name: document.getElementById('ch_name').value,
+        rank: document.getElementById('ch_rank').value,
+        clanName: document.getElementById('ch_clanName').value,
+        techniqueNames: document.getElementById('ch_techs').value.split(',').map(s=>s.trim()).filter(Boolean),
+        domainExpansionName: document.getElementById('ch_domain').value
+      };
+      try{
+        await apiFetch('/characters/' + id, {method:'PUT', body});
+        alert('Atualizado com sucesso');
+        render();
+        closeModal();
+      }catch(e){ showError(e); }
+    });
+    document.getElementById('cancelCh').addEventListener('click', closeModal);
+  }catch(e){ showError(e); }
+}
+
+window.deleteCharacter = async function(id){
+  if(!confirm('Deletar personagem #' + id + '?')) return;
+  try{
+    await apiFetch('/characters/' + id, {method:'DELETE'});
+    alert('Deletado');
+    render();
+  }catch(e){ showError(e); }
+}
+
+/* Create form for character */
+function openCreateForm(){
+  if(state.tab === 'characters') openCreateCharacter();
+  if(state.tab === 'clans') openCreateClan();
+  if(state.tab === 'techniques') openCreateTechnique();
+  if(state.tab === 'domain-expansions') openCreateDomainExpansion();
+}
+
+function openCreateCharacter(){
+  const html = `
+    <div class="form-row"><label>Nome</label><input id="ch_name" /></div>
+    <div class="form-row"><label>Rank</label><input id="ch_rank" /></div>
+    <div class="form-row"><label>Clan Name</label><input id="ch_clanName" /></div>
+    <div class="form-row"><label>Technique Names (vírgula)</label><input id="ch_techs" /></div>
+    <div class="form-row"><label>Domain Expansion Name</label><input id="ch_domain" /></div>
+    <div style="margin-top:8px"><button id="saveCh" class="btn">Criar</button> <button id="cancelCh" class="btn ghost">Cancelar</button></div>
+  `;
+  showModal('Criar personagem', html);
+  document.getElementById('saveCh').addEventListener('click', async ()=>{
+    const body = {
+      name: document.getElementById('ch_name').value,
+      rank: document.getElementById('ch_rank').value,
+      clanName: document.getElementById('ch_clanName').value,
+      techniqueNames: document.getElementById('ch_techs').value.split(',').map(s=>s.trim()).filter(Boolean),
+      domainExpansionName: document.getElementById('ch_domain').value
+    };
+    try{
+      await apiFetch('/characters', {method:'POST', body});
+      alert('Criado');
+      render();
+      closeModal();
+    }catch(e){ showError(e); }
+  });
+  document.getElementById('cancelCh').addEventListener('click', closeModal);
+}
+
+/* --------- Clans --------- */
+async function renderClans(){
+  elements.content.innerHTML = '<h2>Clans</h2>';
+  try{
+    let path = '/clans';
+    const params = new URLSearchParams();
+    params.set('page', state.page);
+    params.set('size', state.size);
+    if(state.q){ path = '/clans/search'; params.set('q', state.q); }
+    const data = await apiFetch(path + '?' + params.toString());
+    const list = Array.isArray(data) ? data : (data.content || data.clans || data);
+    const grid = document.createElement('div'); grid.className='card-grid';
+    if(Array.isArray(list) && list.length){
+      list.forEach(cl => {
+        const html = `
+          <div>
+            <div style="display:flex;justify-content:space-between">
+              <div>
+                <div style="font-weight:700">${escapeHtml(cl.name||'—')}</div>
+                <div class="muted small">${escapeHtml(cl.description||'')}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <button class="btn" onclick="viewClan(${cl.id})">Ver</button>
+                <button class="btn ghost" onclick="editClan(${cl.id})">Editar</button>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.appendChild(makeCard(html));
+      });
+    } else {
+      grid.appendChild(makeCard('<div class="muted">Nenhum clã encontrado.</div>'));
+    }
+    elements.content.appendChild(grid);
+  }catch(e){ showError(e); }
+}
+
+window.viewClan = async function(id){
+  try{
+    const cl = await apiFetch('/clans/' + id);
+    const html = `<h3>${escapeHtml(cl.name)}</h3><div class="muted">${escapeHtml(cl.description||'')}</div>
+      <div style="margin-top:12px"><button class="btn" onclick="editClan(${cl.id})">Editar</button> <button class="btn ghost" onclick="deleteClan(${cl.id})">Deletar</button></div>
+      <hr/><pre>${escapeHtml(JSON.stringify(cl, null, 2))}</pre>`;
+    showModal('Clan', html);
+  }catch(e){ showError(e); }
+}
+
+window.editClan = async function(id){
+  try{
+    const cl = await apiFetch('/clans/' + id);
+    const form = document.createElement('div');
+    form.innerHTML = `
+      <div class="form-row"><label>Nome</label><input id="cl_name" value="${escapeAttr(cl.name||'')}" /></div>
+      <div class="form-row"><label>Descrição</label><textarea id="cl_desc">${escapeAttr(cl.description||'')}</textarea></div>
+      <div style="margin-top:8px"><button id="saveCl" class="btn">Salvar</button> <button id="cancelCl" class="btn ghost">Cancelar</button></div>
+    `;
+    showModal('Editar clã', form.innerHTML);
+    document.getElementById('saveCl').addEventListener('click', async ()=>{
+      const body = { name: document.getElementById('cl_name').value, description: document.getElementById('cl_desc').value };
+      try{ await apiFetch('/clans/' + id, {method:'PUT', body}); alert('Atualizado'); render(); closeModal(); }catch(e){ showError(e); }
+    });
+    document.getElementById('cancelCl').addEventListener('click', closeModal);
+  }catch(e){ showError(e); }
+}
+
+window.deleteClan = async function(id){
+  if(!confirm('Deletar clã #' + id + '?')) return;
+  try{ await apiFetch('/clans/' + id, {method:'DELETE'}); alert('Deletado'); render(); }catch(e){ showError(e); }
+}
+
+function openCreateClan(){
+  const html = `
+    <div class="form-row"><label>Nome</label><input id="cl_name" /></div>
+    <div class="form-row"><label>Descrição</label><textarea id="cl_desc"></textarea></div>
+    <div style="margin-top:8px"><button id="saveCl" class="btn">Criar</button> <button id="cancelCl" class="btn ghost">Cancelar</button></div>
+  `;
+  showModal('Criar clã', html);
+  document.getElementById('saveCl').addEventListener('click', async ()=>{
+    const body = { name: document.getElementById('cl_name').value, description: document.getElementById('cl_desc').value };
+    try{ await apiFetch('/clans', {method:'POST', body}); alert('Criado'); render(); closeModal(); }catch(e){ showError(e); }
+  });
+  document.getElementById('cancelCl').addEventListener('click', closeModal);
+}
+
+/* --------- Techniques --------- */
+async function renderTechniques(){
+  elements.content.innerHTML = '<h2>Techniques</h2>';
+  try{
+    let path = '/techniques';
+    const params = new URLSearchParams();
+    params.set('page', state.page);
+    params.set('size', state.size);
+    if(state.q){ path = '/techniques/search'; params.set('q', state.q); }
+    const data = await apiFetch(path + '?' + params.toString());
+    const list = Array.isArray(data) ? data : (data.content || data.techniques || data);
+    const grid = document.createElement('div'); grid.className='card-grid';
+    if(Array.isArray(list) && list.length){
+      list.forEach(t => {
+        const html = `
+          <div>
+            <div style="display:flex;justify-content:space-between">
+              <div>
+                <div style="font-weight:700">${escapeHtml(t.name||'—')}</div>
+                <div class="muted small">${escapeHtml((t.description||'').slice(0,120))}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <button class="btn" onclick="viewTechnique(${t.id})">Ver</button>
+                <button class="btn ghost" onclick="editTechnique(${t.id})">Editar</button>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.appendChild(makeCard(html));
+      });
+    } else {
+      grid.appendChild(makeCard('<div class="muted">Nenhuma técnica encontrada.</div>'));
+    }
+    elements.content.appendChild(grid);
+  }catch(e){ showError(e); }
+}
+
+window.viewTechnique = async function(id){
+  try{
+    const t = await apiFetch('/techniques/' + id);
+    const html = `<h3>${escapeHtml(t.name)}</h3><div class="muted">${escapeHtml(t.description||'')}</div>
+      <div style="margin-top:12px"><button class="btn" onclick="editTechnique(${t.id})">Editar</button> <button class="btn ghost" onclick="deleteTechnique(${t.id})">Deletar</button></div>
+      <hr/><pre>${escapeHtml(JSON.stringify(t, null, 2))}</pre>`;
+    showModal('Technique', html);
+  }catch(e){ showError(e); }
+}
+
+window.editTechnique = async function(id){
+  try{
+    const t = await apiFetch('/techniques/' + id);
+    const form = document.createElement('div');
+    form.innerHTML = `
+      <div class="form-row"><label>Nome</label><input id="t_name" value="${escapeAttr(t.name||'')}" /></div>
+      <div class="form-row"><label>Descrição</label><textarea id="t_desc">${escapeAttr(t.description||'')}</textarea></div>
+      <div style="margin-top:8px"><button id="saveT" class="btn">Salvar</button> <button id="cancelT" class="btn ghost">Cancelar</button></div>
+    `;
+    showModal('Editar técnica', form.innerHTML);
+    document.getElementById('saveT').addEventListener('click', async ()=>{
+      const body = { name: document.getElementById('t_name').value, description: document.getElementById('t_desc').value };
+      try{ await apiFetch('/techniques/' + id, {method:'PUT', body}); alert('Atualizado'); render(); closeModal(); }catch(e){ showError(e); }
+    });
+    document.getElementById('cancelT').addEventListener('click', closeModal);
+  }catch(e){ showError(e); }
+}
+
+window.deleteTechnique = async function(id){
+  if(!confirm('Deletar técnica #' + id + '?')) return;
+  try{ await apiFetch('/techniques/' + id, {method:'DELETE'}); alert('Deletado'); render(); }catch(e){ showError(e); }
+}
+
+function openCreateTechnique(){
+  const html = `
+    <div class="form-row"><label>Nome</label><input id="t_name" /></div>
+    <div class="form-row"><label>Descrição</label><textarea id="t_desc"></textarea></div>
+    <div style="margin-top:8px"><button id="saveT" class="btn">Criar</button> <button id="cancelT" class="btn ghost">Cancelar</button></div>
+  `;
+  showModal('Criar técnica', html);
+  document.getElementById('saveT').addEventListener('click', async ()=>{
+    const body = { name: document.getElementById('t_name').value, description: document.getElementById('t_desc').value };
+    try{ await apiFetch('/techniques', {method:'POST', body}); alert('Criado'); render(); closeModal(); }catch(e){ showError(e); }
+  });
+  document.getElementById('cancelT').addEventListener('click', closeModal);
+}
+
+/* --------- Domain Expansions --------- */
+async function renderDomainExpansions(){
+  elements.content.innerHTML = '<h2>Domain Expansions</h2>';
+  try{
+    let path = '/domain-expansions';
+    const params = new URLSearchParams();
+    params.set('page', state.page);
+    params.set('size', state.size);
+    if(state.q){ path = '/domain-expansions/search'; params.set('q', state.q); }
+    const data = await apiFetch(path + '?' + params.toString());
+    const list = Array.isArray(data) ? data : (data.content || data.domainExpansions || data);
+    const grid = document.createElement('div'); grid.className='card-grid';
+    if(Array.isArray(list) && list.length){
+      list.forEach(d => {
+        const html = `
+          <div>
+            <div style="display:flex;justify-content:space-between">
+              <div>
+                <div style="font-weight:700">${escapeHtml(d.name||'—')}</div>
+                <div class="muted small">${escapeHtml((d.effect||'').slice(0,120))}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <button class="btn" onclick="viewDomain(${d.id})">Ver</button>
+                <button class="btn ghost" onclick="editDomain(${d.id})">Editar</button>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.appendChild(makeCard(html));
+      });
+    } else {
+      grid.appendChild(makeCard('<div class="muted">Nenhuma expansão encontrada.</div>'));
+    }
+    elements.content.appendChild(grid);
+  }catch(e){ showError(e); }
+}
+
+window.viewDomain = async function(id){
+  try{
+    const d = await apiFetch('/domain-expansions/' + id);
+    const html = `<h3>${escapeHtml(d.name)}</h3><div class="muted">${escapeHtml(d.effect||'')}</div>
+      <div style="margin-top:12px"><button class="btn" onclick="editDomain(${d.id})">Editar</button> <button class="btn ghost" onclick="deleteDomain(${d.id})">Deletar</button></div>
+      <hr/><pre>${escapeHtml(JSON.stringify(d, null, 2))}</pre>`;
+    showModal('Domain Expansion', html);
+  }catch(e){ showError(e); }
+}
+
+window.editDomain = async function(id){
+  try{
+    const d = await apiFetch('/domain-expansions/' + id);
+    const form = document.createElement('div');
+    form.innerHTML = `
+      <div class="form-row"><label>Nome</label><input id="d_name" value="${escapeAttr(d.name||'')}" /></div>
+      <div class="form-row"><label>Efeito</label><textarea id="d_eff">${escapeAttr(d.effect||'')}</textarea></div>
+      <div style="margin-top:8px"><button id="saveD" class="btn">Salvar</button> <button id="cancelD" class="btn ghost">Cancelar</button></div>
+    `;
+    showModal('Editar Domain Expansion', form.innerHTML);
+    document.getElementById('saveD').addEventListener('click', async ()=>{
+      const body = { name: document.getElementById('d_name').value, effect: document.getElementById('d_eff').value };
+      try{ await apiFetch('/domain-expansions/' + id, {method:'PUT', body}); alert('Atualizado'); render(); closeModal(); }catch(e){ showError(e); }
+    });
+    document.getElementById('cancelD').addEventListener('click', closeModal);
+  }catch(e){ showError(e); }
+}
+
+window.deleteDomain = async function(id){
+  if(!confirm('Deletar domain expansion #' + id + '?')) return;
+  try{ await apiFetch('/domain-expansions/' + id, {method:'DELETE'}); alert('Deletado'); render(); }catch(e){ showError(e); }
+}
+
+function openCreateDomainExpansion(){
+  const html = `
+    <div class="form-row"><label>Nome</label><input id="d_name" /></div>
+    <div class="form-row"><label>Efeito</label><textarea id="d_eff"></textarea></div>
+    <div style="margin-top:8px"><button id="saveD" class="btn">Criar</button> <button id="cancelD" class="btn ghost">Cancelar</button></div>
+  `;
+  showModal('Criar Domain Expansion', html);
+  document.getElementById('saveD').addEventListener('click', async ()=>{
+    const body = { name: document.getElementById('d_name').value, effect: document.getElementById('d_eff').value };
+    try{ await apiFetch('/domain-expansions', {method:'POST', body}); alert('Criado'); render(); closeModal(); }catch(e){ showError(e); }
+  });
+  document.getElementById('cancelD').addEventListener('click', closeModal);
+}
+
+/* ---------- utilities: modals, escape ---------- */
+
+function showModal(title, html){
+  const overlay = document.createElement('div');
+  overlay.id = '__overlay';
+  Object.assign(overlay.style, {position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999});
+  const box = document.createElement('div');
+  box.style.width = '820px';
+  box.style.maxWidth = '95%';
+  box.style.maxHeight = '90%';
+  box.style.overflow = 'auto';
+  box.style.borderRadius = '12px';
+  box.style.padding = '18px';
+  box.style.background = 'linear-gradient(180deg, rgba(10,14,20,0.98), rgba(8,10,14,0.96))';
+  box.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div><strong>${title}</strong></div><div><button id="closeModalBtn" class="btn ghost">Fechar</button></div></div>` + html;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+}
+function closeModal(){ const o = document.getElementById('__overlay'); if(o) o.remove(); }
+
+function escapeHtml(s){ if(s===null||s===undefined) return ''; return String(s).replace(/[&<>"']/g, function(m){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])}); }
+function escapeAttr(s){ return (s===null||s===undefined)?'':String(s).replace(/"/g, '&quot;') }
+
+/* Initialize */
+render();
 
 </script>
 </body>
