@@ -388,6 +388,28 @@
             margin-bottom: 1rem;
         }
 
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 1.75rem;
@@ -901,15 +923,23 @@
                 });
 
                 if (response.ok) {
-                    showMessage('Item atualizado com sucesso!', 'success');
+                    showMessage('✅ Item atualizado com sucesso!', 'success');
                     closeModal();
                     loadData();
                 } else {
-                    const error = await response.text();
-                    showMessage('Erro ao atualizar: ' + error, 'error');
+                    let errorMsg = `Erro ${response.status}: ${response.statusText}`;
+                    try {
+                        const errorText = await response.text();
+                        if (errorText) errorMsg += ` - ${errorText}`;
+                    } catch (e) {
+                        console.error('Erro ao ler resposta:', e);
+                    }
+                    showMessage('❌ ' + errorMsg, 'error');
+                    console.error('Erro na requisição PUT:', errorMsg);
                 }
             } catch (error) {
-                showMessage('Erro ao atualizar: ' + error.message, 'error');
+                showMessage('❌ Erro de conexão: ' + error.message, 'error');
+                console.error('Erro no fetch PUT:', error);
             }
         }
 
@@ -931,14 +961,22 @@
                 });
 
                 if (response.ok || response.status === 204) {
-                    showMessage('Item deletado com sucesso!', 'success');
+                    showMessage('✅ Item deletado com sucesso!', 'success');
                     loadData();
                 } else {
-                    const error = await response.text();
-                    showMessage('Erro ao deletar: ' + error, 'error');
+                    let errorMsg = `Erro ${response.status}: ${response.statusText}`;
+                    try {
+                        const errorText = await response.text();
+                        if (errorText) errorMsg += ` - ${errorText}`;
+                    } catch (e) {
+                        console.error('Erro ao ler resposta:', e);
+                    }
+                    showMessage('❌ ' + errorMsg, 'error');
+                    console.error('Erro na requisição DELETE:', errorMsg);
                 }
             } catch (error) {
-                showMessage('Erro ao deletar: ' + error.message, 'error');
+                showMessage('❌ Erro de conexão: ' + error.message, 'error');
+                console.error('Erro no fetch DELETE:', error);
             }
         }
 
@@ -1072,6 +1110,8 @@
                 domains: '/domain-expansions'
             };
 
+            console.log('Enviando dados:', data);
+
             try {
                 const response = await fetch(`${API_BASE}${endpoints[type]}`, {
                     method: 'POST',
@@ -1081,16 +1121,26 @@
                     body: JSON.stringify(data)
                 });
 
+                console.log('Status da resposta:', response.status);
+
                 if (response.ok || response.status === 201) {
-                    showMessage('Item criado com sucesso!', 'success');
+                    showMessage('✅ Item criado com sucesso!', 'success');
                     closeModal();
                     loadData();
                 } else {
-                    const error = await response.text();
-                    showMessage('Erro ao criar: ' + error, 'error');
+                    let errorMsg = `Erro ${response.status}: ${response.statusText}`;
+                    try {
+                        const errorText = await response.text();
+                        if (errorText) errorMsg += ` - ${errorText}`;
+                    } catch (e) {
+                        console.error('Erro ao ler resposta:', e);
+                    }
+                    showMessage('❌ ' + errorMsg, 'error');
+                    console.error('Erro na requisição POST:', errorMsg);
                 }
             } catch (error) {
-                showMessage('Erro ao criar: ' + error.message, 'error');
+                showMessage('❌ Erro de conexão: ' + error.message, 'error');
+                console.error('Erro no fetch POST:', error);
             }
         }
 
@@ -1210,11 +1260,16 @@
             const div = document.createElement('div');
             div.className = type === 'error' ? 'error-message' : 'success-message';
             div.textContent = message;
+            div.style.position = 'relative';
+            div.style.animation = 'slideIn 0.3s ease-out';
             container.appendChild(div);
 
+            console.log(`[${type.toUpperCase()}] ${message}`);
+
             setTimeout(() => {
-                div.remove();
-            }, 5000);
+                div.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => div.remove(), 300);
+            }, 7000);
         }
 
         function escapeHtml(text) {
