@@ -143,6 +143,11 @@
             background: var(--success);
         }
 
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
         .filter-section {
             display: flex;
             gap: 1rem;
@@ -219,11 +224,7 @@
             display: flex;
             gap: 0.5rem;
             margin-top: 1rem;
-        }
-
-        .btn-small {
-            padding: 0.5rem 1rem;
-            font-size: 0.875rem;
+            flex-wrap: wrap;
         }
 
         .tag {
@@ -359,7 +360,6 @@
             background: var(--dark-card);
             padding: 2rem;
             border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
 
         .detail-section {
@@ -375,12 +375,6 @@
         .detail-value {
             color: var(--text-muted);
             line-height: 1.6;
-        }
-
-        .list-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
         }
 
         .empty-state {
@@ -416,21 +410,21 @@
     </div>
 
     <div class="nav">
-        <button class="nav-btn active" data-section="characters">Personagens</button>
-        <button class="nav-btn" data-section="clans">Clãs</button>
-        <button class="nav-btn" data-section="techniques">Técnicas</button>
-        <button class="nav-btn" data-section="domains">Expansões de Domínio</button>
+        <button class="nav-btn active" onclick="changeSection('characters')">Personagens</button>
+        <button class="nav-btn" onclick="changeSection('clans')">Clãs</button>
+        <button class="nav-btn" onclick="changeSection('techniques')">Técnicas</button>
+        <button class="nav-btn" onclick="changeSection('domains')">Expansões de Domínio</button>
     </div>
 
     <div class="container">
-        <div id="message-container"></div>
+        <div id="messageContainer"></div>
         
         <div class="search-section">
             <div class="search-controls">
                 <input type="text" id="searchInput" class="search-input" placeholder="Buscar...">
-                <button id="searchBtn" class="btn">🔍 Buscar</button>
-                <button id="clearBtn" class="btn btn-secondary">✖ Limpar</button>
-                <button id="createBtn" class="btn btn-success">➕ Criar Novo</button>
+                <button onclick="searchData()" class="btn">🔍 Buscar</button>
+                <button onclick="clearSearch()" class="btn btn-secondary">✖ Limpar</button>
+                <button onclick="openCreateModal()" class="btn btn-success">➕ Criar Novo</button>
             </div>
             <div class="filter-section" id="filterSection"></div>
         </div>
@@ -439,17 +433,17 @@
         <div id="content" class="grid"></div>
         
         <div class="pagination" id="pagination" style="display: none;">
-            <button id="prevBtn" class="btn btn-small">← Anterior</button>
+            <button id="prevBtn" class="btn btn-small" onclick="previousPage()">← Anterior</button>
             <span class="pagination-info" id="pageInfo"></span>
-            <button id="nextBtn" class="btn btn-small">Próxima →</button>
+            <button id="nextBtn" class="btn btn-small" onclick="nextPage()">Próxima →</button>
         </div>
     </div>
 
-    <div id="modal" class="modal">
+    <div id="modal" class="modal" onclick="closeModalOnBackdrop(event)">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title" id="modalTitle">Modal</h2>
-                <button class="close-btn" id="closeModal">×</button>
+                <button class="close-btn" onclick="closeModal()">×</button>
             </div>
             <div id="modalBody"></div>
         </div>
@@ -458,121 +452,88 @@
     <script>
         const API_BASE = 'https://kokusen-lucasryu.onrender.com';
         
-        let currentSection = 'characters';
-        let currentPage = 1;
-        let currentSize = 12;
-        let currentSearch = '';
-        let currentFilters = {};
-
-        const sections = {
-            characters: {
-                endpoint: '/characters',
-                title: 'Personagens',
-                searchEndpoint: '/characters/search',
-                filters: ['rank', 'clan']
-            },
-            clans: {
-                endpoint: '/clans',
-                title: 'Clãs',
-                searchEndpoint: '/clans/search'
-            },
-            techniques: {
-                endpoint: '/techniques',
-                title: 'Técnicas',
-                searchEndpoint: '/techniques/search'
-            },
-            domains: {
-                endpoint: '/domain-expansions',
-                title: 'Expansões de Domínio',
-                searchEndpoint: '/domain-expansions/search'
-            }
+        let state = {
+            currentSection: 'characters',
+            currentPage: 1,
+            currentSize: 12,
+            currentSearch: '',
+            totalPages: 1,
+            hasMore: false
         };
 
-        // Navigation
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentSection = btn.dataset.section;
-                currentPage = 1;
-                currentSearch = '';
-                currentFilters = {};
-                document.getElementById('searchInput').value = '';
-                loadData();
-                setupFilters();
-            });
-        });
-
-        // Search
-        document.getElementById('searchBtn').addEventListener('click', () => {
-            currentSearch = document.getElementById('searchInput').value;
-            currentPage = 1;
+        function changeSection(section) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            state.currentSection = section;
+            state.currentPage = 1;
+            state.currentSearch = '';
+            document.getElementById('searchInput').value = '';
+            
+            setupFilters();
             loadData();
-        });
+        }
 
-        document.getElementById('searchInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                currentSearch = document.getElementById('searchInput').value;
-                currentPage = 1;
-                loadData();
-            }
-        });
+        function searchData() {
+            state.currentSearch = document.getElementById('searchInput').value;
+            state.currentPage = 1;
+            loadData();
+        }
 
-        document.getElementById('clearBtn').addEventListener('click', () => {
-            currentSearch = '';
-            currentPage = 1;
-            currentFilters = {};
+        function clearSearch() {
+            state.currentSearch = '';
+            state.currentPage = 1;
             document.getElementById('searchInput').value = '';
             loadData();
-        });
+        }
 
-        // Create button
-        document.getElementById('createBtn').addEventListener('click', () => {
-            openCreateModal();
-        });
-
-        // Pagination
-        document.getElementById('prevBtn').addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
+        function previousPage() {
+            if (state.currentPage > 1) {
+                state.currentPage--;
                 loadData();
             }
-        });
+        }
 
-        document.getElementById('nextBtn').addEventListener('click', () => {
-            currentPage++;
-            loadData();
-        });
-
-        // Modal
-        document.getElementById('closeModal').addEventListener('click', () => {
-            document.getElementById('modal').classList.remove('active');
-        });
-
-        document.getElementById('modal').addEventListener('click', (e) => {
-            if (e.target.id === 'modal') {
-                document.getElementById('modal').classList.remove('active');
+        function nextPage() {
+            if (state.hasMore) {
+                state.currentPage++;
+                loadData();
             }
-        });
+        }
 
-        // Load data
         async function loadData() {
             showLoading(true);
-            const section = sections[currentSection];
             
-            let url = `${API_BASE}${section.endpoint}?page=${currentPage}&size=${currentSize}`;
+            let url = '';
+            const params = `page=${state.currentPage}&size=${state.currentSize}`;
             
-            if (currentSearch) {
-                url = `${API_BASE}${section.searchEndpoint}?q=${encodeURIComponent(currentSearch)}&page=${currentPage}&size=${currentSize}`;
+            if (state.currentSearch) {
+                const endpoints = {
+                    characters: '/characters/search',
+                    clans: '/clans/search',
+                    techniques: '/techniques/search',
+                    domains: '/domain-expansions/search'
+                };
+                url = `${API_BASE}${endpoints[state.currentSection]}?q=${encodeURIComponent(state.currentSearch)}&${params}`;
+            } else {
+                const endpoints = {
+                    characters: '/characters',
+                    clans: '/clans',
+                    techniques: '/techniques',
+                    domains: '/domain-expansions'
+                };
+                url = `${API_BASE}${endpoints[state.currentSection]}?${params}`;
             }
 
             try {
                 const response = await fetch(url);
+                if (!response.ok) throw new Error('Erro na requisição');
                 const data = await response.json();
                 displayData(data);
                 updatePagination(data);
             } catch (error) {
                 showMessage('Erro ao carregar dados: ' + error.message, 'error');
+                document.getElementById('content').innerHTML = '<div class="empty-state"><h3>Erro ao carregar dados</h3><p>Tente novamente mais tarde</p></div>';
             } finally {
                 showLoading(false);
             }
@@ -583,13 +544,13 @@
             content.innerHTML = '';
 
             let items = [];
-            if (currentSection === 'characters') {
+            if (state.currentSection === 'characters') {
                 items = data.characters || [];
-            } else if (currentSection === 'clans') {
+            } else if (state.currentSection === 'clans') {
                 items = data.clans || [];
-            } else if (currentSection === 'techniques') {
+            } else if (state.currentSection === 'techniques') {
                 items = data.techniques || [];
-            } else if (currentSection === 'domains') {
+            } else if (state.currentSection === 'domains') {
                 items = data.domainExpansions || [];
             }
 
@@ -608,56 +569,272 @@
             const card = document.createElement('div');
             card.className = 'card';
 
-            if (currentSection === 'characters') {
+            if (state.currentSection === 'characters') {
                 card.innerHTML = `
                     <div class="card-header">
-                        <h3 class="card-title">${item.name}</h3>
-                        ${item.rank ? `<span class="card-badge">${item.rank}</span>` : ''}
+                        <h3 class="card-title">${escapeHtml(item.name)}</h3>
+                        ${item.rank ? `<span class="card-badge">${escapeHtml(item.rank)}</span>` : ''}
                     </div>
                     <div class="card-content">
-                        ${item.clanName ? `<p><strong>Clã:</strong> ${item.clanName}</p>` : ''}
-                        ${item.domainExpansionName ? `<p><strong>Expansão:</strong> ${item.domainExpansionName}</p>` : ''}
+                        ${item.clanName ? `<p><strong>Clã:</strong> ${escapeHtml(item.clanName)}</p>` : ''}
+                        ${item.domainExpansionName ? `<p><strong>Expansão:</strong> ${escapeHtml(item.domainExpansionName)}</p>` : ''}
                         ${item.techniques && item.techniques.length > 0 ? `<p><strong>Técnicas:</strong> ${item.techniques.length}</p>` : ''}
                     </div>
+                    ${item.techniques && item.techniques.length > 0 ? `
                     <div class="card-footer">
-                        ${item.techniques ? item.techniques.slice(0, 3).map(t => `<span class="tag">${t}</span>`).join('') : ''}
-                    </div>
+                        ${item.techniques.slice(0, 3).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
+                        ${item.techniques.length > 3 ? '<span class="tag">...</span>' : ''}
+                    </div>` : ''}
                     <div class="card-actions">
                         <button class="btn btn-small" onclick="viewDetails(${item.id}, 'characters')">👁 Ver</button>
                         <button class="btn btn-small btn-secondary" onclick="editItem(${item.id}, 'characters')">✏ Editar</button>
-                        <button class="btn btn-small" style="background: var(--error)" onclick="deleteItem(${item.id}, 'characters')">🗑 Deletar</button>
+                        <button class="btn btn-small" style="background: var(--error)" onclick="deleteItem(${item.id}, 'characters', '${escapeHtml(item.name)}')">🗑 Deletar</button>
                     </div>
+                `;
+            } else if (state.currentSection === 'clans') {
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h3 class="card-title">${escapeHtml(item.name)}</h3>
+                        ${item.memberIds ? `<span class="card-badge">${item.memberIds.length} membros</span>` : ''}
+                    </div>
+                    <div class="card-content">
+                        <p>${escapeHtml(item.description || 'Sem descrição')}</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-small" onclick="viewDetails(${item.id}, 'clans')">👁 Ver</button>
+                        <button class="btn btn-small btn-secondary" onclick="editItem(${item.id}, 'clans')">✏ Editar</button>
+                        <button class="btn btn-small" style="background: var(--error)" onclick="deleteItem(${item.id}, 'clans', '${escapeHtml(item.name)}')">🗑 Deletar</button>
+                    </div>
+                `;
+            } else if (state.currentSection === 'techniques') {
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h3 class="card-title">${escapeHtml(item.name)}</h3>
+                        ${item.userIds ? `<span class="card-badge">${item.userIds.length} usuários</span>` : ''}
+                    </div>
+                    <div class="card-content">
+                        <p>${escapeHtml(item.description || 'Sem descrição')}</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-small" onclick="viewDetails(${item.id}, 'techniques')">👁 Ver</button>
+                        <button class="btn btn-small btn-secondary" onclick="editItem(${item.id}, 'techniques')">✏ Editar</button>
+                        <button class="btn btn-small" style="background: var(--error)" onclick="deleteItem(${item.id}, 'techniques', '${escapeHtml(item.name)}')">🗑 Deletar</button>
+                    </div>
+                `;
+            } else if (state.currentSection === 'domains') {
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h3 class="card-title">${escapeHtml(item.name)}</h3>
+                    </div>
+                    <div class="card-content">
+                        <p>${escapeHtml(item.effect || 'Sem descrição')}</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-small" onclick="viewDetails(${item.id}, 'domains')">👁 Ver</button>
+                        <button class="btn btn-small btn-secondary" onclick="editItem(${item.id}, 'domains')">✏ Editar</button>
+                        <button class="btn btn-small" style="background: var(--error)" onclick="deleteItem(${item.id}, 'domains', '${escapeHtml(item.name)}')">🗑 Deletar</button>
+                    </div>
+                `;
+            }
+
+            return card;
+        }
+
+        function updatePagination(data) {
+            const pagination = document.getElementById('pagination');
+            const pageInfo = document.getElementById('pageInfo');
+
+            state.totalPages = data.totalPages || 1;
+            state.hasMore = data.hasMore || false;
+
+            if (state.totalPages > 1 || state.hasMore) {
+                pagination.style.display = 'flex';
+                pageInfo.textContent = `Página ${state.currentPage} de ${state.totalPages}`;
+            } else {
+                pagination.style.display = 'none';
+            }
+        }
+
+        async function viewDetails(id, type) {
+            const endpoints = {
+                characters: '/characters',
+                clans: '/clans',
+                techniques: '/techniques',
+                domains: '/domain-expansions'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}${endpoints[type]}/${id}`);
+                if (!response.ok) throw new Error('Erro ao carregar detalhes');
+                const item = await response.json();
+                
+                document.getElementById('modalTitle').textContent = item.name;
+                document.getElementById('modalBody').innerHTML = createDetailView(item, type);
+                document.getElementById('modal').classList.add('active');
+            } catch (error) {
+                showMessage('Erro ao carregar detalhes: ' + error.message, 'error');
+            }
+        }
+
+        function createDetailView(item, type) {
+            let html = '<div class="detail-view">';
+
+            if (type === 'characters') {
+                html += `
+                    <div class="detail-section">
+                        <div class="detail-label">Nome:</div>
+                        <div class="detail-value">${escapeHtml(item.name)}</div>
+                    </div>
+                    ${item.rank ? `
+                    <div class="detail-section">
+                        <div class="detail-label">Rank:</div>
+                        <div class="detail-value">${escapeHtml(item.rank)}</div>
+                    </div>` : ''}
+                    ${item.clanName ? `
+                    <div class="detail-section">
+                        <div class="detail-label">Clã:</div>
+                        <div class="detail-value">${escapeHtml(item.clanName)}</div>
+                    </div>` : ''}
+                    ${item.domainExpansionName ? `
+                    <div class="detail-section">
+                        <div class="detail-label">Expansão de Domínio:</div>
+                        <div class="detail-value">${escapeHtml(item.domainExpansionName)}</div>
+                    </div>` : ''}
+                    ${item.techniques && item.techniques.length > 0 ? `
+                    <div class="detail-section">
+                        <div class="detail-label">Técnicas:</div>
+                        <div class="detail-value">${item.techniques.map(t => escapeHtml(t)).join(', ')}</div>
+                    </div>` : ''}
+                `;
+            } else if (type === 'clans') {
+                html += `
+                    <div class="detail-section">
+                        <div class="detail-label">Nome:</div>
+                        <div class="detail-value">${escapeHtml(item.name)}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">Descrição:</div>
+                        <div class="detail-value">${escapeHtml(item.description || 'Sem descrição')}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">Número de Membros:</div>
+                        <div class="detail-value">${item.memberIds ? item.memberIds.length : 0}</div>
+                    </div>
+                `;
+            } else if (type === 'techniques') {
+                html += `
+                    <div class="detail-section">
+                        <div class="detail-label">Nome:</div>
+                        <div class="detail-value">${escapeHtml(item.name)}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">Descrição:</div>
+                        <div class="detail-value">${escapeHtml(item.description || 'Sem descrição')}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">Número de Usuários:</div>
+                        <div class="detail-value">${item.userIds ? item.userIds.length : 0}</div>
+                    </div>
+                `;
+            } else if (type === 'domains') {
+                html += `
+                    <div class="detail-section">
+                        <div class="detail-label">Nome:</div>
+                        <div class="detail-value">${escapeHtml(item.name)}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">Efeito:</div>
+                        <div class="detail-value">${escapeHtml(item.effect || 'Sem descrição')}</div>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        async function editItem(id, type) {
+            const endpoints = {
+                characters: '/characters',
+                clans: '/clans',
+                techniques: '/techniques',
+                domains: '/domain-expansions'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}${endpoints[type]}/${id}`);
+                if (!response.ok) throw new Error('Erro ao carregar item');
+                const item = await response.json();
+                
+                document.getElementById('modalTitle').textContent = `Editar ${item.name}`;
+                document.getElementById('modalBody').innerHTML = createEditForm(item, type, id);
+                document.getElementById('modal').classList.add('active');
+            } catch (error) {
+                showMessage('Erro ao carregar item: ' + error.message, 'error');
+            }
+        }
+
+        function createEditForm(item, type, id) {
+            let html = `<form onsubmit="submitEdit(event, ${id}, '${type}')">`;
+
+            if (type === 'characters') {
+                html += `
+                    <div class="form-group">
+                        <label class="form-label">Nome:</label>
+                        <input type="text" name="name" class="form-input" value="${escapeHtml(item.name || '')}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Rank:</label>
+                        <input type="text" name="rank" class="form-input" value="${escapeHtml(item.rank || '')}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Clã:</label>
+                        <input type="text" name="clanName" class="form-input" value="${escapeHtml(item.clanName || '')}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Técnicas (separadas por vírgula):</label>
+                        <input type="text" name="techniqueNames" class="form-input" value="${item.techniques ? item.techniques.map(t => escapeHtml(t)).join(', ') : ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nome da Expansão de Domínio:</label>
+                        <input type="text" name="domainExpansionName" class="form-input" value="${escapeHtml(item.domainExpansionName || '')}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Efeito da Expansão de Domínio:</label>
+                        <textarea name="domainExpansionEffect" class="form-input"></textarea>
+                    </div>
+                `;
             } else if (type === 'clans') {
                 html += `
                     <div class="form-group">
                         <label class="form-label">Nome:</label>
-                        <input type="text" name="name" class="form-input" value="${item.name || ''}" required>
+                        <input type="text" name="name" class="form-input" value="${escapeHtml(item.name || '')}" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Descrição:</label>
-                        <textarea name="description" class="form-input">${item.description || ''}</textarea>
+                        <textarea name="description" class="form-input">${escapeHtml(item.description || '')}</textarea>
                     </div>
                 `;
             } else if (type === 'techniques') {
                 html += `
                     <div class="form-group">
                         <label class="form-label">Nome:</label>
-                        <input type="text" name="name" class="form-input" value="${item.name || ''}" required>
+                        <input type="text" name="name" class="form-input" value="${escapeHtml(item.name || '')}" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Descrição:</label>
-                        <textarea name="description" class="form-input">${item.description || ''}</textarea>
+                        <textarea name="description" class="form-input">${escapeHtml(item.description || '')}</textarea>
                     </div>
                 `;
             } else if (type === 'domains') {
                 html += `
                     <div class="form-group">
                         <label class="form-label">Nome:</label>
-                        <input type="text" name="name" class="form-input" value="${item.name || ''}" required>
+                        <input type="text" name="name" class="form-input" value="${escapeHtml(item.name || '')}" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Efeito:</label>
-                        <textarea name="effect" class="form-input">${item.effect || ''}</textarea>
+                        <textarea name="effect" class="form-input">${escapeHtml(item.effect || '')}</textarea>
                     </div>
                 `;
             }
@@ -665,7 +842,7 @@
             html += `
                 <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
                     <button type="submit" class="btn btn-success">💾 Salvar</button>
-                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal').classList.remove('active')">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
                 </div>
             </form>`;
 
@@ -725,7 +902,7 @@
 
                 if (response.ok) {
                     showMessage('Item atualizado com sucesso!', 'success');
-                    document.getElementById('modal').classList.remove('active');
+                    closeModal();
                     loadData();
                 } else {
                     const error = await response.text();
@@ -736,8 +913,8 @@
             }
         }
 
-        async function deleteItem(id, type) {
-            if (!confirm('Tem certeza que deseja deletar este item?')) {
+        async function deleteItem(id, type, name) {
+            if (!confirm(`Tem certeza que deseja deletar "${name}"?`)) {
                 return;
             }
 
@@ -766,17 +943,20 @@
         }
 
         function openCreateModal() {
-            const modal = document.getElementById('modal');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalBody = document.getElementById('modalBody');
+            const titles = {
+                characters: 'Criar Personagem',
+                clans: 'Criar Clã',
+                techniques: 'Criar Técnica',
+                domains: 'Criar Expansão de Domínio'
+            };
 
-            modalTitle.textContent = `Criar ${sections[currentSection].title}`;
-            modalBody.innerHTML = createCreateForm(currentSection);
-            modal.classList.add('active');
+            document.getElementById('modalTitle').textContent = titles[state.currentSection];
+            document.getElementById('modalBody').innerHTML = createCreateForm(state.currentSection);
+            document.getElementById('modal').classList.add('active');
         }
 
         function createCreateForm(type) {
-            let html = '<form id="createForm" onsubmit="submitCreate(event, \'' + type + '\')">';
+            let html = `<form onsubmit="submitCreate(event, '${type}')">`;
 
             if (type === 'characters') {
                 html += `
@@ -843,7 +1023,7 @@
             html += `
                 <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
                     <button type="submit" class="btn btn-success">➕ Criar</button>
-                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal').classList.remove('active')">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
                 </div>
             </form>`;
 
@@ -903,7 +1083,7 @@
 
                 if (response.ok || response.status === 201) {
                     showMessage('Item criado com sucesso!', 'success');
-                    document.getElementById('modal').classList.remove('active');
+                    closeModal();
                     loadData();
                 } else {
                     const error = await response.text();
@@ -918,8 +1098,7 @@
             const filterSection = document.getElementById('filterSection');
             filterSection.innerHTML = '';
 
-            if (currentSection === 'characters') {
-                // Filter by rank
+            if (state.currentSection === 'characters') {
                 const rankSelect = document.createElement('select');
                 rankSelect.className = 'select-input';
                 rankSelect.innerHTML = `
@@ -930,7 +1109,7 @@
                     <option value="GRADE_3">Grade 3</option>
                     <option value="GRADE_4">Grade 4</option>
                 `;
-                rankSelect.addEventListener('change', (e) => {
+                rankSelect.addEventListener('change', function(e) {
                     if (e.target.value) {
                         loadCharactersByRank(e.target.value);
                     } else {
@@ -939,7 +1118,6 @@
                 });
                 filterSection.appendChild(rankSelect);
 
-                // Filter by clan input
                 const clanInput = document.createElement('input');
                 clanInput.type = 'text';
                 clanInput.className = 'search-input';
@@ -949,11 +1127,11 @@
                 const clanBtn = document.createElement('button');
                 clanBtn.className = 'btn btn-small';
                 clanBtn.textContent = 'Filtrar Clã';
-                clanBtn.addEventListener('click', () => {
+                clanBtn.onclick = function() {
                     if (clanInput.value.trim()) {
                         loadCharactersByClan(clanInput.value.trim());
                     }
-                });
+                };
                 
                 filterSection.appendChild(clanInput);
                 filterSection.appendChild(clanBtn);
@@ -963,7 +1141,8 @@
         async function loadCharactersByRank(rank) {
             showLoading(true);
             try {
-                const response = await fetch(`${API_BASE}/characters/rank/${rank}?page=${currentPage}&size=${currentSize}`);
+                const response = await fetch(`${API_BASE}/characters/rank/${rank}?page=${state.currentPage}&size=${state.currentSize}`);
+                if (!response.ok) throw new Error('Erro ao filtrar');
                 const data = await response.json();
                 
                 const content = document.getElementById('content');
@@ -988,7 +1167,8 @@
         async function loadCharactersByClan(clanName) {
             showLoading(true);
             try {
-                const response = await fetch(`${API_BASE}/characters/clan/${encodeURIComponent(clanName)}?page=${currentPage}&size=${currentSize}`);
+                const response = await fetch(`${API_BASE}/characters/clan/${encodeURIComponent(clanName)}?page=${state.currentPage}&size=${state.currentSize}`);
+                if (!response.ok) throw new Error('Erro ao filtrar');
                 const data = await response.json();
                 
                 const content = document.getElementById('content');
@@ -1010,13 +1190,23 @@
             }
         }
 
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function closeModalOnBackdrop(event) {
+            if (event.target.id === 'modal') {
+                closeModal();
+            }
+        }
+
         function showLoading(show) {
             document.getElementById('loading').style.display = show ? 'block' : 'none';
             document.getElementById('content').style.display = show ? 'none' : 'grid';
         }
 
         function showMessage(message, type) {
-            const container = document.getElementById('message-container');
+            const container = document.getElementById('messageContainer');
             const div = document.createElement('div');
             div.className = type === 'error' ? 'error-message' : 'success-message';
             div.textContent = message;
@@ -1027,246 +1217,25 @@
             }, 5000);
         }
 
-        // Initial load
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchData();
+            }
+        });
+
         loadData();
         setupFilters();
     </script>
 </body>
 </html>
-            } else if (currentSection === 'clans') {
-                card.innerHTML = `
-                    <div class="card-header">
-                        <h3 class="card-title">${item.name}</h3>
-                        ${item.memberIds ? `<span class="card-badge">${item.memberIds.length} membros</span>` : ''}
-                    </div>
-                    <div class="card-content">
-                        <p>${item.description || 'Sem descrição'}</p>
-                    </div>
-                    <div class="card-actions">
-                        <button class="btn btn-small" onclick="viewDetails(${item.id}, 'clans')">👁 Ver</button>
-                        <button class="btn btn-small btn-secondary" onclick="editItem(${item.id}, 'clans')">✏ Editar</button>
-                        <button class="btn btn-small" style="background: var(--error)" onclick="deleteItem(${item.id}, 'clans')">🗑 Deletar</button>
-                    </div>
-                `;
-            } else if (currentSection === 'techniques') {
-                card.innerHTML = `
-                    <div class="card-header">
-                        <h3 class="card-title">${item.name}</h3>
-                        ${item.userIds ? `<span class="card-badge">${item.userIds.length} usuários</span>` : ''}
-                    </div>
-                    <div class="card-content">
-                        <p>${item.description || 'Sem descrição'}</p>
-                    </div>
-                    <div class="card-actions">
-                        <button class="btn btn-small" onclick="viewDetails(${item.id}, 'techniques')">👁 Ver</button>
-                        <button class="btn btn-small btn-secondary" onclick="editItem(${item.id}, 'techniques')">✏ Editar</button>
-                        <button class="btn btn-small" style="background: var(--error)" onclick="deleteItem(${item.id}, 'techniques')">🗑 Deletar</button>
-                    </div>
-                `;
-            } else if (currentSection === 'domains') {
-                card.innerHTML = `
-                    <div class="card-header">
-                        <h3 class="card-title">${item.name}</h3>
-                    </div>
-                    <div class="card-content">
-                        <p>${item.effect || 'Sem descrição'}</p>
-                    </div>
-                    <div class="card-actions">
-                        <button class="btn btn-small" onclick="viewDetails(${item.id}, 'domains')">👁 Ver</button>
-                        <button class="btn btn-small btn-secondary" onclick="editItem(${item.id}, 'domains')">✏ Editar</button>
-                        <button class="btn btn-small" style="background: var(--error)" onclick="deleteItem(${item.id}, 'domains')">🗑 Deletar</button>
-                    </div>
-                `;
-            }
-
-            return card;
-        }
-
-        function updatePagination(data) {
-            const pagination = document.getElementById('pagination');
-            const pageInfo = document.getElementById('pageInfo');
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-
-            let totalPages = 1;
-            let hasMore = false;
-
-            if (currentSection === 'characters') {
-                totalPages = data.totalPages || 1;
-                hasMore = data.hasMore || false;
-            } else if (currentSection === 'clans') {
-                totalPages = data.totalPages || 1;
-                hasMore = data.hasMore || false;
-            } else if (currentSection === 'techniques') {
-                totalPages = data.totalPages || 1;
-                hasMore = data.hasMore || false;
-            } else if (currentSection === 'domains') {
-                totalPages = data.totalPages || 1;
-                hasMore = data.hasMore || false;
-            }
-
-            if (totalPages > 1) {
-                pagination.style.display = 'flex';
-                pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
-                prevBtn.disabled = currentPage === 1;
-                nextBtn.disabled = currentPage >= totalPages || !hasMore;
-            } else {
-                pagination.style.display = 'none';
-            }
-        }
-
-        async function viewDetails(id, type) {
-            const endpoints = {
-                characters: '/characters',
-                clans: '/clans',
-                techniques: '/techniques',
-                domains: '/domain-expansions'
-            };
-
-            try {
-                const response = await fetch(`${API_BASE}${endpoints[type]}/${id}`);
-                const item = await response.json();
-                
-                const modal = document.getElementById('modal');
-                const modalTitle = document.getElementById('modalTitle');
-                const modalBody = document.getElementById('modalBody');
-
-                modalTitle.textContent = item.name;
-                modalBody.innerHTML = createDetailView(item, type);
-                modal.classList.add('active');
-            } catch (error) {
-                showMessage('Erro ao carregar detalhes: ' + error.message, 'error');
-            }
-        }
-
-        function createDetailView(item, type) {
-            let html = '<div class="detail-view">';
-
-            if (type === 'characters') {
-                html += `
-                    <div class="detail-section">
-                        <div class="detail-label">Nome:</div>
-                        <div class="detail-value">${item.name}</div>
-                    </div>
-                    ${item.rank ? `
-                    <div class="detail-section">
-                        <div class="detail-label">Rank:</div>
-                        <div class="detail-value">${item.rank}</div>
-                    </div>` : ''}
-                    ${item.clanName ? `
-                    <div class="detail-section">
-                        <div class="detail-label">Clã:</div>
-                        <div class="detail-value">${item.clanName}</div>
-                    </div>` : ''}
-                    ${item.domainExpansionName ? `
-                    <div class="detail-section">
-                        <div class="detail-label">Expansão de Domínio:</div>
-                        <div class="detail-value">${item.domainExpansionName}</div>
-                    </div>` : ''}
-                    ${item.techniques && item.techniques.length > 0 ? `
-                    <div class="detail-section">
-                        <div class="detail-label">Técnicas:</div>
-                        <div class="detail-value">${item.techniques.join(', ')}</div>
-                    </div>` : ''}
-                `;
-            } else if (type === 'clans') {
-                html += `
-                    <div class="detail-section">
-                        <div class="detail-label">Nome:</div>
-                        <div class="detail-value">${item.name}</div>
-                    </div>
-                    <div class="detail-section">
-                        <div class="detail-label">Descrição:</div>
-                        <div class="detail-value">${item.description || 'Sem descrição'}</div>
-                    </div>
-                    <div class="detail-section">
-                        <div class="detail-label">Número de Membros:</div>
-                        <div class="detail-value">${item.memberIds ? item.memberIds.length : 0}</div>
-                    </div>
-                `;
-            } else if (type === 'techniques') {
-                html += `
-                    <div class="detail-section">
-                        <div class="detail-label">Nome:</div>
-                        <div class="detail-value">${item.name}</div>
-                    </div>
-                    <div class="detail-section">
-                        <div class="detail-label">Descrição:</div>
-                        <div class="detail-value">${item.description || 'Sem descrição'}</div>
-                    </div>
-                    <div class="detail-section">
-                        <div class="detail-label">Número de Usuários:</div>
-                        <div class="detail-value">${item.userIds ? item.userIds.length : 0}</div>
-                    </div>
-                `;
-            } else if (type === 'domains') {
-                html += `
-                    <div class="detail-section">
-                        <div class="detail-label">Nome:</div>
-                        <div class="detail-value">${item.name}</div>
-                    </div>
-                    <div class="detail-section">
-                        <div class="detail-label">Efeito:</div>
-                        <div class="detail-value">${item.effect || 'Sem descrição'}</div>
-                    </div>
-                `;
-            }
-
-            html += '</div>';
-            return html;
-        }
-
-        async function editItem(id, type) {
-            const endpoints = {
-                characters: '/characters',
-                clans: '/clans',
-                techniques: '/techniques',
-                domains: '/domain-expansions'
-            };
-
-            try {
-                const response = await fetch(`${API_BASE}${endpoints[type]}/${id}`);
-                const item = await response.json();
-                
-                const modal = document.getElementById('modal');
-                const modalTitle = document.getElementById('modalTitle');
-                const modalBody = document.getElementById('modalBody');
-
-                modalTitle.textContent = `Editar ${item.name}`;
-                modalBody.innerHTML = createEditForm(item, type, id);
-                modal.classList.add('active');
-            } catch (error) {
-                showMessage('Erro ao carregar item: ' + error.message, 'error');
-            }
-        }
-
-        function createEditForm(item, type, id) {
-            let html = '<form id="editForm" onsubmit="submitEdit(event, ' + id + ', \'' + type + '\')">';
-
-            if (type === 'characters') {
-                html += `
-                    <div class="form-group">
-                        <label class="form-label">Nome:</label>
-                        <input type="text" name="name" class="form-input" value="${item.name || ''}" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Rank:</label>
-                        <input type="text" name="rank" class="form-input" value="${item.rank || ''}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Clã:</label>
-                        <input type="text" name="clanName" class="form-input" value="${item.clanName || ''}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Técnicas (separadas por vírgula):</label>
-                        <input type="text" name="techniqueNames" class="form-input" value="${item.techniques ? item.techniques.join(', ') : ''}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Nome da Expansão de Domínio:</label>
-                        <input type="text" name="domainExpansionName" class="form-input" value="${item.domainExpansionName || ''}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Efeito da Expansão de Domínio:</label>
-                        <textarea name="domainExpansionEffect" class="form-input"></textarea>
-                    </div>
-                `;
