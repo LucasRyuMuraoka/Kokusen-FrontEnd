@@ -1,626 +1,1272 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Kokusen Explorer — Frontend</title>
-<style>
-  :root{
-    --bg:#0f1724; --card:#0b1220; --muted:#9aa4b2; --accent:#86efac; --accent-2:#60a5fa;
-    --glass: rgba(255,255,255,0.03);
-    color-scheme: dark;
-  }
-  *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,#071022 0%, #081226 60%); color:#e6eef6;}
-  header{display:flex;align-items:center;gap:16px;padding:18px 24px;border-bottom:1px solid rgba(255,255,255,0.03)}
-  .brand{display:flex;gap:12px;align-items:center}
-  .logo{width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#04293b}
-  h1{font-size:18px;margin:0}
-  .subtitle{font-size:12px;color:var(--muted)}
-  .controls{margin-left:auto;display:flex;gap:8px;align-items:center}
-  input,select,button,textarea{background:var(--card);border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:8px;color:inherit}
-  input[type=text]{min-width:300px}
-  main{display:flex;gap:20px;padding:20px}
-  nav{width:220px;background:rgba(255,255,255,0.02);padding:16px;border-radius:12px;min-height:60vh}
-  nav h3{margin:6px 0 12px 0;color:var(--muted);font-size:13px}
-  .nav-btn{display:block;padding:10px;border-radius:8px;margin-bottom:8px;text-decoration:none;color:inherit}
-  .nav-btn.active{background:linear-gradient(90deg, rgba(134,239,172,0.08), rgba(96,165,250,0.06));box-shadow:0 4px 18px rgba(6,8,15,0.6)}
-  section.viewer{flex:1;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:18px;border-radius:12px;min-height:60vh;overflow:auto}
-  .toolbar{display:flex;gap:8px;align-items:center;margin-bottom:12px}
-  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
-  .card{background:var(--glass);border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,0.03)}
-  .muted{color:var(--muted);font-size:13px}
-  .small{font-size:13px}
-  .btn{padding:8px 10px;border-radius:8px;border:none;background:var(--accent-2);color:#06203a;cursor:pointer}
-  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
-  .form-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-  textarea{min-height:80px}
-  .detail{display:flex;gap:12px;align-items:flex-start}
-  .detail .meta{flex:1}
-  footer{padding:18px 24px;color:var(--muted);font-size:13px;border-top:1px solid rgba(255,255,255,0.02);text-align:center}
-  .search{display:flex;gap:8px;align-items:center}
-  .chip{display:inline-block;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.02);font-size:13px;color:var(--muted)}
-  .link{color:var(--accent-2);cursor:pointer;text-decoration:underline}
-  .flex{display:flex;align-items:center;gap:8px}
-  pre{white-space:pre-wrap;background:#041226;padding:10px;border-radius:8px;color:var(--muted);font-size:13px}
-  @media(max-width:900px){nav{display:none} main{padding:12px}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kokusen - Jujutsu Kaisen Database</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #ec4899;
+            --dark: #0f172a;
+            --dark-lighter: #1e293b;
+            --dark-card: #334155;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-lighter) 100%);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .header p {
+            text-align: center;
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: var(--dark-lighter);
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--dark-card);
+            border: 2px solid transparent;
+            color: var(--text);
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .nav-btn:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            border-color: var(--secondary);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .search-section {
+            background: var(--dark-card);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .search-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 0.75rem;
+            background: var(--dark-lighter);
+            border: 2px solid var(--dark);
+            color: var(--text);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .select-input {
+            padding: 0.75rem;
+            background: var(--dark-lighter);
+            border: 2px solid var(--dark);
+            color: var(--text);
+            border-radius: 8px;
+            font-size: 1rem;
+            min-width: 150px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--dark-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(139, 92, 246, 0.3);
+            border-color: var(--primary);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-badge {
+            padding: 0.25rem 0.75rem;
+            background: var(--primary);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .card-content {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .card-footer {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .tag {
+            padding: 0.25rem 0.75rem;
+            background: var(--dark-lighter);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            border: 1px solid var(--primary);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .pagination-info {
+            color: var(--text-muted);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: var(--dark-card);
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.75rem;
+            color: var(--primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--dark-lighter);
+            border: 2px solid var(--dark);
+            color: var(--text);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        textarea.form-input {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.25rem;
+            color: var(--text-muted);
+        }
+
+        .error-message {
+            background: var(--error);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .success-message {
+            background: var(--success);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .detail-view {
+            background: var(--dark-card);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .detail-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-label {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-value {
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .search-controls {
+                flex-direction: column;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-<header>
-  <div class="brand">
-    <div class="logo">K</div>
-    <div>
-      <h1>Kokusen Explorer</h1>
-      <div class="subtitle">Frontend bonito para consumir sua API — Quarkus (single file)</div>
+    <div class="header">
+        <h1>🔮 KOKUSEN</h1>
+        <p>Jujutsu Kaisen Database</p>
     </div>
-  </div>
-  <div class="controls">
-    <label class="muted" for="baseUrl">API Base URL</label>
-    <input id="baseUrl" type="text" value="https://kokusen-lucasryu.onrender.com" />
-  </div>
-</header>
 
-<main>
-  <nav>
-    <h3>Recursos</h3>
-    <a class="nav-btn active" data-tab="characters">Characters</a>
-    <a class="nav-btn" data-tab="clans">Clans</a>
-    <a class="nav-btn" data-tab="techniques">Techniques</a>
-    <a class="nav-btn" data-tab="domain-expansions">Domain Expansions</a>
-    <hr style="border:none;height:1px;background:rgba(255,255,255,0.02);margin:12px 0" />
-    <div class="muted">Dicas</div>
-    <div style="margin-top:8px" class="small">Coloque a URL base (ex: <span class="chip">https://kokusen-lucasryu.onrender.com</span>). Use o painel para criar, editar, buscar e deletar recursos.</div>
-  </nav>
-
-  <section class="viewer">
-    <div id="app">
-      <!-- Toolbar -->
-      <div class="toolbar">
-        <div class="search">
-          <input id="q" type="text" placeholder="Pesquisar por nome..." />
-          <button id="btnSearch" class="btn">Pesquisar</button>
-        </div>
-        <div style="margin-left:auto" class="flex">
-          <select id="pageSize">
-            <option value="5">5 por página</option>
-            <option value="10" selected>10 por página</option>
-            <option value="20">20 por página</option>
-          </select>
-          <button id="btnCreate" class="btn">Criar novo</button>
-          <button id="btnRefresh" class="btn ghost">Atualizar</button>
-        </div>
-      </div>
-
-      <!-- Main content placeholder -->
-      <div id="content">
-        <!-- dynamic -->
-      </div>
-
-      <!-- raw response -->
-      <div style="margin-top:14px">
-        <div class="muted">Última resposta (raw):</div>
-        <pre id="raw">Nenhuma requisição ainda.</pre>
-      </div>
+    <div class="nav">
+        <button class="nav-btn active" data-section="characters">Personagens</button>
+        <button class="nav-btn" data-section="clans">Clãs</button>
+        <button class="nav-btn" data-section="techniques">Técnicas</button>
+        <button class="nav-btn" data-section="domains">Expansões de Domínio</button>
     </div>
-  </section>
-</main>
 
-<footer>Feito para a API <strong>Kokusen</strong>. Arquivo único: HTML + CSS + JS.</footer>
-
-<script>
-/*
-  Kokusen Explorer — a single-file frontend.
-  It supports: characters, clans, techniques, domain-expansions.
-  Uses the API paths described in the OpenAPI you provided.
-  NOTE: ping/health functionality removed per request (não foi incluído nada fora da doc).
-*/
-
-const state = {
-  base: document.getElementById('baseUrl').value.replace(/\/+$/, ''),
-  tab: 'characters',
-  page: 1,
-  size: 10,
-  q: '',
-  lastResponse: null
-};
-
-const elements = {
-  content: document.getElementById('content'),
-  raw: document.getElementById('raw'),
-  baseUrl: document.getElementById('baseUrl'),
-  q: document.getElementById('q'),
-  btnSearch: document.getElementById('btnSearch'),
-  btnCreate: document.getElementById('btnCreate'),
-  btnRefresh: document.getElementById('btnRefresh'),
-  pageSize: document.getElementById('pageSize'),
-  navBtns: document.querySelectorAll('.nav-btn'),
-};
-
-function setRaw(r){ elements.raw.textContent = r ? (typeof r === 'string' ? r : JSON.stringify(r, null, 2)) : '---'; }
-function updateBase(){ state.base = elements.baseUrl.value.replace(/\/+$/, ''); }
-
-elements.baseUrl.addEventListener('change', updateBase);
-
-elements.navBtns.forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    elements.navBtns.forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    state.tab = btn.dataset.tab;
-    state.page = 1;
-    render();
-  });
-});
-
-elements.btnSearch.addEventListener('click', ()=>{ state.q = elements.q.value.trim(); state.page = 1; render(); });
-elements.btnRefresh.addEventListener('click', ()=> render());
-elements.pageSize.addEventListener('change', ()=> { state.size = +elements.pageSize.value; render(); });
-elements.btnCreate.addEventListener('click', ()=> openCreateForm());
-
-function showError(e){
-  let msg = 'Erro';
-  if(e instanceof Response){
-    e.text().then(t=> setRaw(t));
-    msg = 'Requisição falhou: ' + e.status;
-  } else {
-    msg = e.message || String(e);
-    setRaw(msg);
-  }
-  alert(msg);
-}
-
-async function apiFetch(path, opts={}){
-  updateBase();
-  const url = (path.startsWith('http') ? path : state.base + path);
-  const headers = opts.headers || {};
-  if(!(opts.body instanceof FormData)) headers['Content-Type'] = 'application/json';
-  const final = Object.assign({method:'GET', headers}, opts);
-  if(final.body && typeof final.body !== 'string' && !(final.body instanceof FormData)){
-    final.body = JSON.stringify(final.body);
-  }
-  const res = await fetch(url, final);
-  const text = await res.text();
-  let parsed = null;
-  try{ parsed = text ? JSON.parse(text) : null; } catch(e){}
-  state.lastResponse = {status: res.status, ok: res.ok, body: parsed ?? text};
-  setRaw(state.lastResponse);
-  if(!res.ok) {
-    const ex = res;
-    throw ex;
-  }
-  return parsed;
-}
-
-/* ---------- Renderers for each resource ---------- */
-
-async function render(){
-  elements.q.value = state.q;
-  if(state.tab === 'characters') await renderCharacters();
-  if(state.tab === 'clans') await renderClans();
-  if(state.tab === 'techniques') await renderTechniques();
-  if(state.tab === 'domain-expansions') await renderDomainExpansions();
-}
-
-function makeCard(htmlInner){ const d = document.createElement('div'); d.className='card'; d.innerHTML = htmlInner; return d; }
-
-/* --------- Characters --------- */
-async function renderCharacters(){
-  elements.content.innerHTML = '<h2>Characters</h2>';
-  const toolbar = document.createElement('div'); toolbar.className='toolbar';
-  elements.content.appendChild(toolbar);
-
-  try{
-    let path = '/characters';
-    const params = new URLSearchParams();
-    params.set('page', state.page);
-    params.set('size', state.size);
-    if(state.q) { path = '/characters/search'; params.set('q', state.q); }
-    const url = path + '?' + params.toString();
-    const data = await apiFetch(url);
-    const list = Array.isArray(data) ? data : (data.content || data.characters || data);
-    const grid = document.createElement('div'); grid.className='card-grid';
-    if(Array.isArray(list) && list.length){
-      list.forEach(ch => {
-        const html = `
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-weight:700">${escapeHtml(ch.name||'—')}</div>
-              <div class="muted small">${escapeHtml(ch.rank||'—')} • ${escapeHtml(ch.clanName||'Sem clã')}</div>
+    <div class="container">
+        <div id="message-container"></div>
+        
+        <div class="search-section">
+            <div class="search-controls">
+                <input type="text" id="searchInput" class="search-input" placeholder="Buscar...">
+                <button id="searchBtn" class="btn">🔍 Buscar</button>
+                <button id="clearBtn" class="btn btn-secondary">✖ Limpar</button>
+                <button id="createBtn" class="btn btn-success">➕ Criar Novo</button>
             </div>
-            <div style="display:flex;flex-direction:column;gap:6px">
-              <button class="btn" onclick="viewCharacter(${ch.id})">Ver</button>
-              <button class="btn ghost" onclick="editCharacter(${ch.id})">Editar</button>
+            <div class="filter-section" id="filterSection"></div>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">Carregando...</div>
+        <div id="content" class="grid"></div>
+        
+        <div class="pagination" id="pagination" style="display: none;">
+            <button id="prevBtn" class="btn btn-small">← Anterior</button>
+            <span class="pagination-info" id="pageInfo"></span>
+            <button id="nextBtn" class="btn btn-small">Próxima →</button>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Modal</h2>
+                <button class="close-btn" id="closeModal">×</button>
             </div>
-          </div>
-        `;
-        grid.appendChild(makeCard(html));
-      });
-    } else {
-      grid.appendChild(makeCard('<div class="muted">Nenhum personagem encontrado.</div>'));
-    }
-    elements.content.appendChild(grid);
+            <div id="modalBody"></div>
+        </div>
+    </div>
 
-  } catch(e){
-    showError(e);
-  }
-}
+    <script>
+        const API_BASE = 'https://kokusen-lucasryu.onrender.com';
+        
+        let currentSection = 'characters';
+        let currentPage = 1;
+        let currentSize = 12;
+        let currentSearch = '';
+        let currentFilters = {};
 
-/* Character helpers */
-window.viewCharacter = async function(id){
-  try{
-    const ch = await apiFetch('/characters/' + id);
-    const detail = document.createElement('div');
-    detail.innerHTML = `<h3>${escapeHtml(ch.name)}</h3><div class="muted">Rank: ${escapeHtml(ch.rank||'—')}</div><div class="muted">Clan: ${escapeHtml(ch.clanName||'—')}</div>
-      <div style="margin-top:8px"><strong>Técnicas:</strong></div>
-      <div style="margin-top:6px">${(ch.links && ch.links.length)? ch.links.map(l=> \`<div class="chip">${escapeHtml(l.rel)}: <span class="link" onclick="window.open('\${l.href}','_blank')">\${escapeHtml(l.href)}</span></div>\`).join(' ') : '<span class=\"muted\">Nenhuma</span>'}</div>
-      <div style="margin-top:12px">
-        <button class="btn" onclick="editCharacter(${ch.id})">Editar</button>
-        <button class="btn ghost" onclick="deleteCharacter(${ch.id})">Deletar</button>
-      </div>
-      <hr/>
-      <pre>${escapeHtml(JSON.stringify(ch, null, 2))}</pre>
-    `;
-    showModal('Character', detail.innerHTML);
-  }catch(e){ showError(e); }
-}
+        const sections = {
+            characters: {
+                endpoint: '/characters',
+                title: 'Personagens',
+                searchEndpoint: '/characters/search',
+                filters: ['rank', 'clan']
+            },
+            clans: {
+                endpoint: '/clans',
+                title: 'Clãs',
+                searchEndpoint: '/clans/search'
+            },
+            techniques: {
+                endpoint: '/techniques',
+                title: 'Técnicas',
+                searchEndpoint: '/techniques/search'
+            },
+            domains: {
+                endpoint: '/domain-expansions',
+                title: 'Expansões de Domínio',
+                searchEndpoint: '/domain-expansions/search'
+            }
+        };
 
-window.editCharacter = async function(id){
-  try{
-    const ch = await apiFetch('/characters/' + id);
-    const form = document.createElement('div');
-    form.innerHTML = `
-      <div class="form-row"><label>Nome</label><input id="ch_name" value="${escapeAttr(ch.name||'')}" /></div>
-      <div class="form-row"><label>Rank</label><input id="ch_rank" value="${escapeAttr(ch.rank||'')}" /></div>
-      <div class="form-row"><label>Clan Name</label><input id="ch_clanName" value="${escapeAttr(ch.clanName||'')}" /></div>
-      <div class="form-row"><label>Technique Names (vírgula)</label><input id="ch_techs" value="${escapeAttr((ch.techniqueNames||[]).join(', '))}" /></div>
-      <div class="form-row"><label>Domain Expansion Name</label><input id="ch_domain" value="${escapeAttr(ch.domainExpansionName||'')}" /></div>
-      <div style="margin-top:8px"><button id="saveCh" class="btn">Salvar</button> <button id="cancelCh" class="btn ghost">Cancelar</button></div>
-    `;
-    showModal('Editar personagem', form.innerHTML);
-    document.getElementById('saveCh').addEventListener('click', async ()=>{
-      const body = {
-        name: document.getElementById('ch_name').value,
-        rank: document.getElementById('ch_rank').value,
-        clanName: document.getElementById('ch_clanName').value,
-        techniqueNames: document.getElementById('ch_techs').value.split(',').map(s=>s.trim()).filter(Boolean),
-        domainExpansionName: document.getElementById('ch_domain').value
-      };
-      try{
-        await apiFetch('/characters/' + id, {method:'PUT', body});
-        alert('Atualizado com sucesso');
-        render();
-        closeModal();
-      }catch(e){ showError(e); }
-    });
-    document.getElementById('cancelCh').addEventListener('click', closeModal);
-  }catch(e){ showError(e); }
-}
+        // Navigation
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentSection = btn.dataset.section;
+                currentPage = 1;
+                currentSearch = '';
+                currentFilters = {};
+                document.getElementById('searchInput').value = '';
+                loadData();
+                setupFilters();
+            });
+        });
 
-window.deleteCharacter = async function(id){
-  if(!confirm('Deletar personagem #' + id + '?')) return;
-  try{
-    await apiFetch('/characters/' + id, {method:'DELETE'});
-    alert('Deletado');
-    render();
-  }catch(e){ showError(e); }
-}
+        // Search
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            currentSearch = document.getElementById('searchInput').value;
+            currentPage = 1;
+            loadData();
+        });
 
-/* Create form for character */
-function openCreateForm(){
-  if(state.tab === 'characters') openCreateCharacter();
-  if(state.tab === 'clans') openCreateClan();
-  if(state.tab === 'techniques') openCreateTechnique();
-  if(state.tab === 'domain-expansions') openCreateDomainExpansion();
-}
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                currentSearch = document.getElementById('searchInput').value;
+                currentPage = 1;
+                loadData();
+            }
+        });
 
-function openCreateCharacter(){
-  const html = `
-    <div class="form-row"><label>Nome</label><input id="ch_name" /></div>
-    <div class="form-row"><label>Rank</label><input id="ch_rank" /></div>
-    <div class="form-row"><label>Clan Name</label><input id="ch_clanName" /></div>
-    <div class="form-row"><label>Technique Names (vírgula)</label><input id="ch_techs" /></div>
-    <div class="form-row"><label>Domain Expansion Name</label><input id="ch_domain" /></div>
-    <div style="margin-top:8px"><button id="saveCh" class="btn">Criar</button> <button id="cancelCh" class="btn ghost">Cancelar</button></div>
-  `;
-  showModal('Criar personagem', html);
-  document.getElementById('saveCh').addEventListener('click', async ()=>{
-    const body = {
-      name: document.getElementById('ch_name').value,
-      rank: document.getElementById('ch_rank').value,
-      clanName: document.getElementById('ch_clanName').value,
-      techniqueNames: document.getElementById('ch_techs').value.split(',').map(s=>s.trim()).filter(Boolean),
-      domainExpansionName: document.getElementById('ch_domain').value
-    };
-    try{
-      await apiFetch('/characters', {method:'POST', body});
-      alert('Criado');
-      render();
-      closeModal();
-    }catch(e){ showError(e); }
-  });
-  document.getElementById('cancelCh').addEventListener('click', closeModal);
-}
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            currentSearch = '';
+            currentPage = 1;
+            currentFilters = {};
+            document.getElementById('searchInput').value = '';
+            loadData();
+        });
 
-/* --------- Clans --------- */
-async function renderClans(){
-  elements.content.innerHTML = '<h2>Clans</h2>';
-  try{
-    let path = '/clans';
-    const params = new URLSearchParams();
-    params.set('page', state.page);
-    params.set('size', state.size);
-    if(state.q){ path = '/clans/search'; params.set('q', state.q); }
-    const data = await apiFetch(path + '?' + params.toString());
-    const list = Array.isArray(data) ? data : (data.content || data.clans || data);
-    const grid = document.createElement('div'); grid.className='card-grid';
-    if(Array.isArray(list) && list.length){
-      list.forEach(cl => {
-        const html = `
-          <div>
-            <div style="display:flex;justify-content:space-between">
-              <div>
-                <div style="font-weight:700">${escapeHtml(cl.name||'—')}</div>
-                <div class="muted small">${escapeHtml(cl.description||'')}</div>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:6px">
-                <button class="btn" onclick="viewClan(${cl.id})">Ver</button>
-                <button class="btn ghost" onclick="editClan(${cl.id})">Editar</button>
-              </div>
-            </div>
-          </div>
-        `;
-        grid.appendChild(makeCard(html));
-      });
-    } else {
-      grid.appendChild(makeCard('<div class="muted">Nenhum clã encontrado.</div>'));
-    }
-    elements.content.appendChild(grid);
-  }catch(e){ showError(e); }
-}
+        // Create button
+        document.getElementById('createBtn').addEventListener('click', () => {
+            openCreateModal();
+        });
 
-window.viewClan = async function(id){
-  try{
-    const cl = await apiFetch('/clans/' + id);
-    const html = `<h3>${escapeHtml(cl.name)}</h3><div class="muted">${escapeHtml(cl.description||'')}</div>
-      <div style="margin-top:12px"><button class="btn" onclick="editClan(${cl.id})">Editar</button> <button class="btn ghost" onclick="deleteClan(${cl.id})">Deletar</button></div>
-      <hr/><pre>${escapeHtml(JSON.stringify(cl, null, 2))}</pre>`;
-    showModal('Clan', html);
-  }catch(e){ showError(e); }
-}
+        // Pagination
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                loadData();
+            }
+        });
 
-window.editClan = async function(id){
-  try{
-    const cl = await apiFetch('/clans/' + id);
-    const form = document.createElement('div');
-    form.innerHTML = `
-      <div class="form-row"><label>Nome</label><input id="cl_name" value="${escapeAttr(cl.name||'')}" /></div>
-      <div class="form-row"><label>Descrição</label><textarea id="cl_desc">${escapeAttr(cl.description||'')}</textarea></div>
-      <div style="margin-top:8px"><button id="saveCl" class="btn">Salvar</button> <button id="cancelCl" class="btn ghost">Cancelar</button></div>
-    `;
-    showModal('Editar clã', form.innerHTML);
-    document.getElementById('saveCl').addEventListener('click', async ()=>{
-      const body = { name: document.getElementById('cl_name').value, description: document.getElementById('cl_desc').value };
-      try{ await apiFetch('/clans/' + id, {method:'PUT', body}); alert('Atualizado'); render(); closeModal(); }catch(e){ showError(e); }
-    });
-    document.getElementById('cancelCl').addEventListener('click', closeModal);
-  }catch(e){ showError(e); }
-}
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            currentPage++;
+            loadData();
+        });
 
-window.deleteClan = async function(id){
-  if(!confirm('Deletar clã #' + id + '?')) return;
-  try{ await apiFetch('/clans/' + id, {method:'DELETE'}); alert('Deletado'); render(); }catch(e){ showError(e); }
-}
+        // Modal
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('modal').classList.remove('active');
+        });
 
-function openCreateClan(){
-  const html = `
-    <div class="form-row"><label>Nome</label><input id="cl_name" /></div>
-    <div class="form-row"><label>Descrição</label><textarea id="cl_desc"></textarea></div>
-    <div style="margin-top:8px"><button id="saveCl" class="btn">Criar</button> <button id="cancelCl" class="btn ghost">Cancelar</button></div>
-  `;
-  showModal('Criar clã', html);
-  document.getElementById('saveCl').addEventListener('click', async ()=>{
-    const body = { name: document.getElementById('cl_name').value, description: document.getElementById('cl_desc').value };
-    try{ await apiFetch('/clans', {method:'POST', body}); alert('Criado'); render(); closeModal(); }catch(e){ showError(e); }
-  });
-  document.getElementById('cancelCl').addEventListener('click', closeModal);
-}
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') {
+                document.getElementById('modal').classList.remove('active');
+            }
+        });
 
-/* --------- Techniques --------- */
-async function renderTechniques(){
-  elements.content.innerHTML = '<h2>Techniques</h2>';
-  try{
-    let path = '/techniques';
-    const params = new URLSearchParams();
-    params.set('page', state.page);
-    params.set('size', state.size);
-    if(state.q){ path = '/techniques/search'; params.set('q', state.q); }
-    const data = await apiFetch(path + '?' + params.toString());
-    const list = Array.isArray(data) ? data : (data.content || data.techniques || data);
-    const grid = document.createElement('div'); grid.className='card-grid';
-    if(Array.isArray(list) && list.length){
-      list.forEach(t => {
-        const html = `
-          <div>
-            <div style="display:flex;justify-content:space-between">
-              <div>
-                <div style="font-weight:700">${escapeHtml(t.name||'—')}</div>
-                <div class="muted small">${escapeHtml((t.description||'').slice(0,120))}</div>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:6px">
-                <button class="btn" onclick="viewTechnique(${t.id})">Ver</button>
-                <button class="btn ghost" onclick="editTechnique(${t.id})">Editar</button>
-              </div>
-            </div>
-          </div>
-        `;
-        grid.appendChild(makeCard(html));
-      });
-    } else {
-      grid.appendChild(makeCard('<div class="muted">Nenhuma técnica encontrada.</div>'));
-    }
-    elements.content.appendChild(grid);
-  }catch(e){ showError(e); }
-}
+        // Load data
+        async function loadData() {
+            showLoading(true);
+            const section = sections[currentSection];
+            
+            let url = `${API_BASE}${section.endpoint}?page=${currentPage}&size=${currentSize}`;
+            
+            if (currentSearch) {
+                url = `${API_BASE}${section.searchEndpoint}?q=${encodeURIComponent(currentSearch)}&page=${currentPage}&size=${currentSize}`;
+            }
 
-window.viewTechnique = async function(id){
-  try{
-    const t = await apiFetch('/techniques/' + id);
-    const html = `<h3>${escapeHtml(t.name)}</h3><div class="muted">${escapeHtml(t.description||'')}</div>
-      <div style="margin-top:12px"><button class="btn" onclick="editTechnique(${t.id})">Editar</button> <button class="btn ghost" onclick="deleteTechnique(${t.id})">Deletar</button></div>
-      <hr/><pre>${escapeHtml(JSON.stringify(t, null, 2))}</pre>`;
-    showModal('Technique', html);
-  }catch(e){ showError(e); }
-}
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayData(data);
+                updatePagination(data);
+            } catch (error) {
+                showMessage('Erro ao carregar dados: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
 
-window.editTechnique = async function(id){
-  try{
-    const t = await apiFetch('/techniques/' + id);
-    const form = document.createElement('div');
-    form.innerHTML = `
-      <div class="form-row"><label>Nome</label><input id="t_name" value="${escapeAttr(t.name||'')}" /></div>
-      <div class="form-row"><label>Descrição</label><textarea id="t_desc">${escapeAttr(t.description||'')}</textarea></div>
-      <div style="margin-top:8px"><button id="saveT" class="btn">Salvar</button> <button id="cancelT" class="btn ghost">Cancelar</button></div>
-    `;
-    showModal('Editar técnica', form.innerHTML);
-    document.getElementById('saveT').addEventListener('click', async ()=>{
-      const body = { name: document.getElementById('t_name').value, description: document.getElementById('t_desc').value };
-      try{ await apiFetch('/techniques/' + id, {method:'PUT', body}); alert('Atualizado'); render(); closeModal(); }catch(e){ showError(e); }
-    });
-    document.getElementById('cancelT').addEventListener('click', closeModal);
-  }catch(e){ showError(e); }
-}
+        function displayData(data) {
+            const content = document.getElementById('content');
+            content.innerHTML = '';
 
-window.deleteTechnique = async function(id){
-  if(!confirm('Deletar técnica #' + id + '?')) return;
-  try{ await apiFetch('/techniques/' + id, {method:'DELETE'}); alert('Deletado'); render(); }catch(e){ showError(e); }
-}
+            let items = [];
+            if (currentSection === 'characters') {
+                items = data.characters || [];
+            } else if (currentSection === 'clans') {
+                items = data.clans || [];
+            } else if (currentSection === 'techniques') {
+                items = data.techniques || [];
+            } else if (currentSection === 'domains') {
+                items = data.domainExpansions || [];
+            }
 
-function openCreateTechnique(){
-  const html = `
-    <div class="form-row"><label>Nome</label><input id="t_name" /></div>
-    <div class="form-row"><label>Descrição</label><textarea id="t_desc"></textarea></div>
-    <div style="margin-top:8px"><button id="saveT" class="btn">Criar</button> <button id="cancelT" class="btn ghost">Cancelar</button></div>
-  `;
-  showModal('Criar técnica', html);
-  document.getElementById('saveT').addEventListener('click', async ()=>{
-    const body = { name: document.getElementById('t_name').value, description: document.getElementById('t_desc').value };
-    try{ await apiFetch('/techniques', {method:'POST', body}); alert('Criado'); render(); closeModal(); }catch(e){ showError(e); }
-  });
-  document.getElementById('cancelT').addEventListener('click', closeModal);
-}
+            if (items.length === 0) {
+                content.innerHTML = '<div class="empty-state"><h3>Nenhum resultado encontrado</h3><p>Tente ajustar sua busca</p></div>';
+                return;
+            }
 
-/* --------- Domain Expansions --------- */
-async function renderDomainExpansions(){
-  elements.content.innerHTML = '<h2>Domain Expansions</h2>';
-  try{
-    let path = '/domain-expansions';
-    const params = new URLSearchParams();
-    params.set('page', state.page);
-    params.set('size', state.size);
-    if(state.q){ path = '/domain-expansions/search'; params.set('q', state.q); }
-    const data = await apiFetch(path + '?' + params.toString());
-    const list = Array.isArray(data) ? data : (data.content || data.domainExpansions || data);
-    const grid = document.createElement('div'); grid.className='card-grid';
-    if(Array.isArray(list) && list.length){
-      list.forEach(d => {
-        const html = `
-          <div>
-            <div style="display:flex;justify-content:space-between">
-              <div>
-                <div style="font-weight:700">${escapeHtml(d.name||'—')}</div>
-                <div class="muted small">${escapeHtml((d.effect||'').slice(0,120))}</div>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:6px">
-                <button class="btn" onclick="viewDomain(${d.id})">Ver</button>
-                <button class="btn ghost" onclick="editDomain(${d.id})">Editar</button>
-              </div>
-            </div>
-          </div>
-        `;
-        grid.appendChild(makeCard(html));
-      });
-    } else {
-      grid.appendChild(makeCard('<div class="muted">Nenhuma expansão encontrada.</div>'));
-    }
-    elements.content.appendChild(grid);
-  }catch(e){ showError(e); }
-}
+            items.forEach(item => {
+                const card = createCard(item);
+                content.appendChild(card);
+            });
+        }
 
-window.viewDomain = async function(id){
-  try{
-    const d = await apiFetch('/domain-expansions/' + id);
-    const html = `<h3>${escapeHtml(d.name)}</h3><div class="muted">${escapeHtml(d.effect||'')}</div>
-      <div style="margin-top:12px"><button class="btn" onclick="editDomain(${d.id})">Editar</button> <button class="btn ghost" onclick="deleteDomain(${d.id})">Deletar</button></div>
-      <hr/><pre>${escapeHtml(JSON.stringify(d, null, 2))}</pre>`;
-    showModal('Domain Expansion', html);
-  }catch(e){ showError(e); }
-}
+        function createCard(item) {
+            const card = document.createElement('div');
+            card.className = 'card';
 
-window.editDomain = async function(id){
-  try{
-    const d = await apiFetch('/domain-expansions/' + id);
-    const form = document.createElement('div');
-    form.innerHTML = `
-      <div class="form-row"><label>Nome</label><input id="d_name" value="${escapeAttr(d.name||'')}" /></div>
-      <div class="form-row"><label>Efeito</label><textarea id="d_eff">${escapeAttr(d.effect||'')}</textarea></div>
-      <div style="margin-top:8px"><button id="saveD" class="btn">Salvar</button> <button id="cancelD" class="btn ghost">Cancelar</button></div>
-    `;
-    showModal('Editar Domain Expansion', form.innerHTML);
-    document.getElementById('saveD').addEventListener('click', async ()=>{
-      const body = { name: document.getElementById('d_name').value, effect: document.getElementById('d_eff').value };
-      try{ await apiFetch('/domain-expansions/' + id, {method:'PUT', body}); alert('Atualizado'); render(); closeModal(); }catch(e){ showError(e); }
-    });
-    document.getElementById('cancelD').addEventListener('click', closeModal);
-  }catch(e){ showError(e); }
-}
+            if (currentSection === 'characters') {
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h3 class="card-title">${item.name}</h3>
+                        ${item.rank ? `<span class="card-badge">${item.rank}</span>` : ''}
+                    </div>
+                    <div class="card-content">
+                        ${item.clanName ? `<p><strong>Clã:</strong> ${item.clanName}</p>` : ''}
+                        ${item.domainExpansionName ? `<p><strong>Expansão:</strong> ${item.domainExpansionName}</p>` : ''}
+                        ${item.techniques && item.techniques.length > 0 ? `<p><strong>Técnicas:</strong> ${item.techniques.length}</p>` : ''}
+                    </div>
+                    <div class="card-footer">
+                        ${item.techniques ? item.techniques.slice(0, 3).map(t => `<span class="tag">${t}</span>`).join('') : ''}
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-small" onclick="viewDetails(${item.id}, 'characters')">👁 Ver</button>
+                        <button class="btn btn-small btn-secondary" onclick="editItem(${item.id}, 'characters')">✏ Editar</button>
+                        <button class="btn btn-small" style="background: var(--error)" onclick="deleteItem(${item.id}, 'characters')">🗑 Deletar</button>
+                    </div>
+            } else if (type === 'clans') {
+                html += `
+                    <div class="form-group">
+                        <label class="form-label">Nome:</label>
+                        <input type="text" name="name" class="form-input" value="${item.name || ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descrição:</label>
+                        <textarea name="description" class="form-input">${item.description || ''}</textarea>
+                    </div>
+                `;
+            } else if (type === 'techniques') {
+                html += `
+                    <div class="form-group">
+                        <label class="form-label">Nome:</label>
+                        <input type="text" name="name" class="form-input" value="${item.name || ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descrição:</label>
+                        <textarea name="description" class="form-input">${item.description || ''}</textarea>
+                    </div>
+                `;
+            } else if (type === 'domains') {
+                html += `
+                    <div class="form-group">
+                        <label class="form-label">Nome:</label>
+                        <input type="text" name="name" class="form-input" value="${item.name || ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Efeito:</label>
+                        <textarea name="effect" class="form-input">${item.effect || ''}</textarea>
+                    </div>
+                `;
+            }
 
-window.deleteDomain = async function(id){
-  if(!confirm('Deletar domain expansion #' + id + '?')) return;
-  try{ await apiFetch('/domain-expansions/' + id, {method:'DELETE'}); alert('Deletado'); render(); }catch(e){ showError(e); }
-}
+            html += `
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-success">💾 Salvar</button>
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal').classList.remove('active')">Cancelar</button>
+                </div>
+            </form>`;
 
-function openCreateDomainExpansion(){
-  const html = `
-    <div class="form-row"><label>Nome</label><input id="d_name" /></div>
-    <div class="form-row"><label>Efeito</label><textarea id="d_eff"></textarea></div>
-    <div style="margin-top:8px"><button id="saveD" class="btn">Criar</button> <button id="cancelD" class="btn ghost">Cancelar</button></div>
-  `;
-  showModal('Criar Domain Expansion', html);
-  document.getElementById('saveD').addEventListener('click', async ()=>{
-    const body = { name: document.getElementById('d_name').value, effect: document.getElementById('d_eff').value };
-    try{ await apiFetch('/domain-expansions', {method:'POST', body}); alert('Criado'); render(); closeModal(); }catch(e){ showError(e); }
-  });
-  document.getElementById('cancelD').addEventListener('click', closeModal);
-}
+            return html;
+        }
 
-/* ---------- utilities: modals, escape ---------- */
+        async function submitEdit(event, id, type) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            let data = {};
+            
+            if (type === 'characters') {
+                const techniques = formData.get('techniqueNames');
+                data = {
+                    name: formData.get('name'),
+                    rank: formData.get('rank') || null,
+                    clanName: formData.get('clanName') || null,
+                    techniqueNames: techniques ? techniques.split(',').map(t => t.trim()).filter(t => t) : [],
+                    domainExpansionName: formData.get('domainExpansionName') || null,
+                    domainExpansionEffect: formData.get('domainExpansionEffect') || null
+                };
+            } else if (type === 'clans') {
+                data = {
+                    name: formData.get('name'),
+                    description: formData.get('description') || null
+                };
+            } else if (type === 'techniques') {
+                data = {
+                    name: formData.get('name'),
+                    description: formData.get('description') || null
+                };
+            } else if (type === 'domains') {
+                data = {
+                    name: formData.get('name'),
+                    effect: formData.get('effect') || null
+                };
+            }
 
-function showModal(title, html){
-  const overlay = document.createElement('div');
-  overlay.id = '__overlay';
-  Object.assign(overlay.style, {position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999});
-  const box = document.createElement('div');
-  box.style.width = '820px';
-  box.style.maxWidth = '95%';
-  box.style.maxHeight = '90%';
-  box.style.overflow = 'auto';
-  box.style.borderRadius = '12px';
-  box.style.padding = '18px';
-  box.style.background = 'linear-gradient(180deg, rgba(10,14,20,0.98), rgba(8,10,14,0.96))';
-  box.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div><strong>${title}</strong></div><div><button id="closeModalBtn" class="btn ghost">Fechar</button></div></div>` + html;
-  overlay.appendChild(box);
-  document.body.appendChild(overlay);
-  document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-}
-function closeModal(){ const o = document.getElementById('__overlay'); if(o) o.remove(); }
+            const endpoints = {
+                characters: '/characters',
+                clans: '/clans',
+                techniques: '/techniques',
+                domains: '/domain-expansions'
+            };
 
-function escapeHtml(s){ if(s===null||s===undefined) return ''; return String(s).replace(/[&<>"']/g, function(m){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])}); }
-function escapeAttr(s){ return (s===null||s===undefined)?'':String(s).replace(/"/g, '&quot;') }
+            try {
+                const response = await fetch(`${API_BASE}${endpoints[type]}/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
 
-/* Initialize */
-render();
+                if (response.ok) {
+                    showMessage('Item atualizado com sucesso!', 'success');
+                    document.getElementById('modal').classList.remove('active');
+                    loadData();
+                } else {
+                    const error = await response.text();
+                    showMessage('Erro ao atualizar: ' + error, 'error');
+                }
+            } catch (error) {
+                showMessage('Erro ao atualizar: ' + error.message, 'error');
+            }
+        }
 
-</script>
+        async function deleteItem(id, type) {
+            if (!confirm('Tem certeza que deseja deletar este item?')) {
+                return;
+            }
+
+            const endpoints = {
+                characters: '/characters',
+                clans: '/clans',
+                techniques: '/techniques',
+                domains: '/domain-expansions'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}${endpoints[type]}/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok || response.status === 204) {
+                    showMessage('Item deletado com sucesso!', 'success');
+                    loadData();
+                } else {
+                    const error = await response.text();
+                    showMessage('Erro ao deletar: ' + error, 'error');
+                }
+            } catch (error) {
+                showMessage('Erro ao deletar: ' + error.message, 'error');
+            }
+        }
+
+        function openCreateModal() {
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+
+            modalTitle.textContent = `Criar ${sections[currentSection].title}`;
+            modalBody.innerHTML = createCreateForm(currentSection);
+            modal.classList.add('active');
+        }
+
+        function createCreateForm(type) {
+            let html = '<form id="createForm" onsubmit="submitCreate(event, \'' + type + '\')">';
+
+            if (type === 'characters') {
+                html += `
+                    <div class="form-group">
+                        <label class="form-label">Nome:</label>
+                        <input type="text" name="name" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Rank:</label>
+                        <input type="text" name="rank" class="form-input" placeholder="Ex: SPECIAL_GRADE, GRADE_1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Clã:</label>
+                        <input type="text" name="clanName" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Técnicas (separadas por vírgula):</label>
+                        <input type="text" name="techniqueNames" class="form-input" placeholder="Ex: Técnica 1, Técnica 2">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nome da Expansão de Domínio:</label>
+                        <input type="text" name="domainExpansionName" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Efeito da Expansão de Domínio:</label>
+                        <textarea name="domainExpansionEffect" class="form-input"></textarea>
+                    </div>
+                `;
+            } else if (type === 'clans') {
+                html += `
+                    <div class="form-group">
+                        <label class="form-label">Nome:</label>
+                        <input type="text" name="name" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descrição:</label>
+                        <textarea name="description" class="form-input"></textarea>
+                    </div>
+                `;
+            } else if (type === 'techniques') {
+                html += `
+                    <div class="form-group">
+                        <label class="form-label">Nome:</label>
+                        <input type="text" name="name" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descrição:</label>
+                        <textarea name="description" class="form-input"></textarea>
+                    </div>
+                `;
+            } else if (type === 'domains') {
+                html += `
+                    <div class="form-group">
+                        <label class="form-label">Nome:</label>
+                        <input type="text" name="name" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Efeito:</label>
+                        <textarea name="effect" class="form-input"></textarea>
+                    </div>
+                `;
+            }
+
+            html += `
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-success">➕ Criar</button>
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal').classList.remove('active')">Cancelar</button>
+                </div>
+            </form>`;
+
+            return html;
+        }
+
+        async function submitCreate(event, type) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            let data = {};
+            
+            if (type === 'characters') {
+                const techniques = formData.get('techniqueNames');
+                data = {
+                    name: formData.get('name'),
+                    rank: formData.get('rank') || null,
+                    clanName: formData.get('clanName') || null,
+                    techniqueNames: techniques ? techniques.split(',').map(t => t.trim()).filter(t => t) : [],
+                    domainExpansionName: formData.get('domainExpansionName') || null,
+                    domainExpansionEffect: formData.get('domainExpansionEffect') || null
+                };
+            } else if (type === 'clans') {
+                data = {
+                    name: formData.get('name'),
+                    description: formData.get('description') || null
+                };
+            } else if (type === 'techniques') {
+                data = {
+                    name: formData.get('name'),
+                    description: formData.get('description') || null
+                };
+            } else if (type === 'domains') {
+                data = {
+                    name: formData.get('name'),
+                    effect: formData.get('effect') || null
+                };
+            }
+
+            const endpoints = {
+                characters: '/characters',
+                clans: '/clans',
+                techniques: '/techniques',
+                domains: '/domain-expansions'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}${endpoints[type]}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok || response.status === 201) {
+                    showMessage('Item criado com sucesso!', 'success');
+                    document.getElementById('modal').classList.remove('active');
+                    loadData();
+                } else {
+                    const error = await response.text();
+                    showMessage('Erro ao criar: ' + error, 'error');
+                }
+            } catch (error) {
+                showMessage('Erro ao criar: ' + error.message, 'error');
+            }
+        }
+
+        function setupFilters() {
+            const filterSection = document.getElementById('filterSection');
+            filterSection.innerHTML = '';
+
+            if (currentSection === 'characters') {
+                // Filter by rank
+                const rankSelect = document.createElement('select');
+                rankSelect.className = 'select-input';
+                rankSelect.innerHTML = `
+                    <option value="">Todos os Ranks</option>
+                    <option value="SPECIAL_GRADE">Special Grade</option>
+                    <option value="GRADE_1">Grade 1</option>
+                    <option value="GRADE_2">Grade 2</option>
+                    <option value="GRADE_3">Grade 3</option>
+                    <option value="GRADE_4">Grade 4</option>
+                `;
+                rankSelect.addEventListener('change', (e) => {
+                    if (e.target.value) {
+                        loadCharactersByRank(e.target.value);
+                    } else {
+                        loadData();
+                    }
+                });
+                filterSection.appendChild(rankSelect);
+
+                // Filter by clan input
+                const clanInput = document.createElement('input');
+                clanInput.type = 'text';
+                clanInput.className = 'search-input';
+                clanInput.placeholder = 'Filtrar por clã...';
+                clanInput.style.minWidth = '200px';
+                
+                const clanBtn = document.createElement('button');
+                clanBtn.className = 'btn btn-small';
+                clanBtn.textContent = 'Filtrar Clã';
+                clanBtn.addEventListener('click', () => {
+                    if (clanInput.value.trim()) {
+                        loadCharactersByClan(clanInput.value.trim());
+                    }
+                });
+                
+                filterSection.appendChild(clanInput);
+                filterSection.appendChild(clanBtn);
+            }
+        }
+
+        async function loadCharactersByRank(rank) {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE}/characters/rank/${rank}?page=${currentPage}&size=${currentSize}`);
+                const data = await response.json();
+                
+                const content = document.getElementById('content');
+                content.innerHTML = '';
+                
+                if (data.length === 0) {
+                    content.innerHTML = '<div class="empty-state"><h3>Nenhum personagem encontrado</h3></div>';
+                    return;
+                }
+                
+                data.forEach(item => {
+                    const card = createCard(item);
+                    content.appendChild(card);
+                });
+            } catch (error) {
+                showMessage('Erro ao filtrar por rank: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function loadCharactersByClan(clanName) {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE}/characters/clan/${encodeURIComponent(clanName)}?page=${currentPage}&size=${currentSize}`);
+                const data = await response.json();
+                
+                const content = document.getElementById('content');
+                content.innerHTML = '';
+                
+                if (data.length === 0) {
+                    content.innerHTML = '<div class="empty-state"><h3>Nenhum personagem encontrado</h3></div>';
+                    return;
+                }
+                
+                data.forEach(item => {
+                    const card = createCard(item);
+                    content.appendChild(card);
+                });
+            } catch (error) {
+                showMessage('Erro ao filtrar por clã: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('content').style.display = show ? 'none' : 'grid';
+        }
+
+        function showMessage(message, type) {
+            const container = document.getElementById('message-container');
+            const div = document.createElement('div');
+            div.className = type === 'error' ? 'error-message' : 'success-message';
+            div.textContent = message;
+            container.appendChild(div);
+
+            setTimeout(() => {
+                div.remove();
+            }, 5000);
+        }
+
+        // Initial load
+        loadData();
+        setupFilters();
+    </script>
 </body>
 </html>
+            } else if (currentSection === 'clans') {
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h3 class="card-title">${item.name}</h3>
+                        ${item.memberIds ? `<span class="card-badge">${item.memberIds.length} membros</span>` : ''}
+                    </div>
+                    <div class="card-content">
+                        <p>${item.description || 'Sem descrição'}</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-small" onclick="viewDetails(${item.id}, 'clans')">👁 Ver</button>
+                        <button class="btn btn-small btn-secondary" onclick="editItem(${item.id}, 'clans')">✏ Editar</button>
+                        <button class="btn btn-small" style="background: var(--error)" onclick="deleteItem(${item.id}, 'clans')">🗑 Deletar</button>
+                    </div>
+                `;
+            } else if (currentSection === 'techniques') {
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h3 class="card-title">${item.name}</h3>
+                        ${item.userIds ? `<span class="card-badge">${item.userIds.length} usuários</span>` : ''}
+                    </div>
+                    <div class="card-content">
+                        <p>${item.description || 'Sem descrição'}</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-small" onclick="viewDetails(${item.id}, 'techniques')">👁 Ver</button>
+                        <button class="btn btn-small btn-secondary" onclick="editItem(${item.id}, 'techniques')">✏ Editar</button>
+                        <button class="btn btn-small" style="background: var(--error)" onclick="deleteItem(${item.id}, 'techniques')">🗑 Deletar</button>
+                    </div>
+                `;
+            } else if (currentSection === 'domains') {
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h3 class="card-title">${item.name}</h3>
+                    </div>
+                    <div class="card-content">
+                        <p>${item.effect || 'Sem descrição'}</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-small" onclick="viewDetails(${item.id}, 'domains')">👁 Ver</button>
+                        <button class="btn btn-small btn-secondary" onclick="editItem(${item.id}, 'domains')">✏ Editar</button>
+                        <button class="btn btn-small" style="background: var(--error)" onclick="deleteItem(${item.id}, 'domains')">🗑 Deletar</button>
+                    </div>
+                `;
+            }
+
+            return card;
+        }
+
+        function updatePagination(data) {
+            const pagination = document.getElementById('pagination');
+            const pageInfo = document.getElementById('pageInfo');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            let totalPages = 1;
+            let hasMore = false;
+
+            if (currentSection === 'characters') {
+                totalPages = data.totalPages || 1;
+                hasMore = data.hasMore || false;
+            } else if (currentSection === 'clans') {
+                totalPages = data.totalPages || 1;
+                hasMore = data.hasMore || false;
+            } else if (currentSection === 'techniques') {
+                totalPages = data.totalPages || 1;
+                hasMore = data.hasMore || false;
+            } else if (currentSection === 'domains') {
+                totalPages = data.totalPages || 1;
+                hasMore = data.hasMore || false;
+            }
+
+            if (totalPages > 1) {
+                pagination.style.display = 'flex';
+                pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+                prevBtn.disabled = currentPage === 1;
+                nextBtn.disabled = currentPage >= totalPages || !hasMore;
+            } else {
+                pagination.style.display = 'none';
+            }
+        }
+
+        async function viewDetails(id, type) {
+            const endpoints = {
+                characters: '/characters',
+                clans: '/clans',
+                techniques: '/techniques',
+                domains: '/domain-expansions'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}${endpoints[type]}/${id}`);
+                const item = await response.json();
+                
+                const modal = document.getElementById('modal');
+                const modalTitle = document.getElementById('modalTitle');
+                const modalBody = document.getElementById('modalBody');
+
+                modalTitle.textContent = item.name;
+                modalBody.innerHTML = createDetailView(item, type);
+                modal.classList.add('active');
+            } catch (error) {
+                showMessage('Erro ao carregar detalhes: ' + error.message, 'error');
+            }
+        }
+
+        function createDetailView(item, type) {
+            let html = '<div class="detail-view">';
+
+            if (type === 'characters') {
+                html += `
+                    <div class="detail-section">
+                        <div class="detail-label">Nome:</div>
+                        <div class="detail-value">${item.name}</div>
+                    </div>
+                    ${item.rank ? `
+                    <div class="detail-section">
+                        <div class="detail-label">Rank:</div>
+                        <div class="detail-value">${item.rank}</div>
+                    </div>` : ''}
+                    ${item.clanName ? `
+                    <div class="detail-section">
+                        <div class="detail-label">Clã:</div>
+                        <div class="detail-value">${item.clanName}</div>
+                    </div>` : ''}
+                    ${item.domainExpansionName ? `
+                    <div class="detail-section">
+                        <div class="detail-label">Expansão de Domínio:</div>
+                        <div class="detail-value">${item.domainExpansionName}</div>
+                    </div>` : ''}
+                    ${item.techniques && item.techniques.length > 0 ? `
+                    <div class="detail-section">
+                        <div class="detail-label">Técnicas:</div>
+                        <div class="detail-value">${item.techniques.join(', ')}</div>
+                    </div>` : ''}
+                `;
+            } else if (type === 'clans') {
+                html += `
+                    <div class="detail-section">
+                        <div class="detail-label">Nome:</div>
+                        <div class="detail-value">${item.name}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">Descrição:</div>
+                        <div class="detail-value">${item.description || 'Sem descrição'}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">Número de Membros:</div>
+                        <div class="detail-value">${item.memberIds ? item.memberIds.length : 0}</div>
+                    </div>
+                `;
+            } else if (type === 'techniques') {
+                html += `
+                    <div class="detail-section">
+                        <div class="detail-label">Nome:</div>
+                        <div class="detail-value">${item.name}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">Descrição:</div>
+                        <div class="detail-value">${item.description || 'Sem descrição'}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">Número de Usuários:</div>
+                        <div class="detail-value">${item.userIds ? item.userIds.length : 0}</div>
+                    </div>
+                `;
+            } else if (type === 'domains') {
+                html += `
+                    <div class="detail-section">
+                        <div class="detail-label">Nome:</div>
+                        <div class="detail-value">${item.name}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">Efeito:</div>
+                        <div class="detail-value">${item.effect || 'Sem descrição'}</div>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        async function editItem(id, type) {
+            const endpoints = {
+                characters: '/characters',
+                clans: '/clans',
+                techniques: '/techniques',
+                domains: '/domain-expansions'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}${endpoints[type]}/${id}`);
+                const item = await response.json();
+                
+                const modal = document.getElementById('modal');
+                const modalTitle = document.getElementById('modalTitle');
+                const modalBody = document.getElementById('modalBody');
+
+                modalTitle.textContent = `Editar ${item.name}`;
+                modalBody.innerHTML = createEditForm(item, type, id);
+                modal.classList.add('active');
+            } catch (error) {
+                showMessage('Erro ao carregar item: ' + error.message, 'error');
+            }
+        }
+
+        function createEditForm(item, type, id) {
+            let html = '<form id="editForm" onsubmit="submitEdit(event, ' + id + ', \'' + type + '\')">';
+
+            if (type === 'characters') {
+                html += `
+                    <div class="form-group">
+                        <label class="form-label">Nome:</label>
+                        <input type="text" name="name" class="form-input" value="${item.name || ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Rank:</label>
+                        <input type="text" name="rank" class="form-input" value="${item.rank || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Clã:</label>
+                        <input type="text" name="clanName" class="form-input" value="${item.clanName || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Técnicas (separadas por vírgula):</label>
+                        <input type="text" name="techniqueNames" class="form-input" value="${item.techniques ? item.techniques.join(', ') : ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nome da Expansão de Domínio:</label>
+                        <input type="text" name="domainExpansionName" class="form-input" value="${item.domainExpansionName || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Efeito da Expansão de Domínio:</label>
+                        <textarea name="domainExpansionEffect" class="form-input"></textarea>
+                    </div>
+                `;
